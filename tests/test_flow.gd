@@ -21,7 +21,7 @@ func run() -> void:
 		if FileAccess.file_exists(S.PATH+suffix):backup[suffix]=FileAccess.get_file_as_string(S.PATH+suffix)
 	S.write_save(S.defaults())
 	game=instantiate_game()
-	check(game.screen=="title" and game.prefs.gear.items.size()==6,"First launch migrates starter gear")
+	check(game.screen=="title" and game.prefs.gear.items.size()==2,"First launch migrates starter gear")
 	game.open_pack(false)
 	check(is_instance_valid(game.pack_ui),"Home backpack available")
 	game.pack_ui.closed.emit()

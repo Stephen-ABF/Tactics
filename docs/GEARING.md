@@ -1,84 +1,110 @@
-# Backpack and forge reference
+# Thornwake v0.5.0 — backpack, Sigils and risk
 
-## Backpack controls
+Every item packed into the 6×5 grid is active. Rotate shapes and fit a build; there are no body equipment slots. The home stash holds spare items. At camp, only packed items and this run's field finds are accessible. Defeat retains collected gear. Destruction comes from deliberate forging, corruption or salvage.
 
-Select a packed item by tapping one of its occupied cells, or select a stash card. The small shape preview shows the current rotation. Choose **Place / Move**, then tap the top-left origin cell where you want that shape. Invalid overlap/out-of-bounds placements leave the item unchanged. **Rotate 90** rotates in place if it fits; stash it first if blocked. **To stash** removes its bonuses. At camp this button becomes **To field**, so the item stays accessible during that camp.
+## Fresh profile and migration
 
-Stash cards are paginated three at a time. The backpack screen shows the aggregate active bonuses and selected-item details. **Done** returns to the title or camp. No inventory management occurs during an attack animation.
+New profiles start with a Normal blade (two empty sockets), a Normal shield, one Ash Sigil, one Gale Sigil, 18 scrap and no corruption shards. Select the blade → Sigils → put Ash in socket 1, Gale in socket 2. This forms Briarsteel Binding. Forge Guide explains the sequence. The recipe book is always available from the socket screen.
 
-## Item catalog and modifiers
+Existing v0.4.0 inventories, currencies and socket contents are retained; Magic becomes Uncommon. The internal `runes` save key and recipe `runes` arrays remain for backward compatibility, but UI uses Sigils/Bindings. Profile schema is now2; absent new Sigils, marks and boss counters initialize to zero. Active wave bonuses stay snapshotted until the next wave. Upgrade contributions are rebalanced to the per-level table below when bonuses are next calculated.
 
-Six bases: Briar Blade (3 cells), Root Shield (3-cell L), Moss Coat (2 × 2), Gale Staff (3 cells), Thorn Charm (1 cell), Grove Relic (4-cell T). Rotation is allowed. Base shapes remain fixed after upgrading/corrupting.
+## Rarity and drops
 
-Normal items have a base trait. Magic items add one rolled trait; rare and set items add two rolled traits with values 1–2. Unique items have curated identities: Razorwake, Last Bastion, Barkbound, Skythread, Heartseed and Bloodroot, each tied to its base with fixed trait combinations.
+| Gear quality | Share of gear rolls | Identity |
+| --- | ---: | --- |
+| Normal |30% | Base trait; eligible for Bindings |
+| Uncommon |32% | Base + one random basic-affix roll |
+| Rare |25% | Base + two basic-affix rolls |
+| Epic |9% | Two basic-affix rolls + one base-specific conditional effect |
+| Unique |2% | Curated named stat combination |
+| Set |2% | Two basic-affix rolls and distinct-part set bonuses |
 
-| Trait | Combat effect | Aggregate cap |
-| --- | --- | --- |
-| Edge | Additional power on every route hit | 2 |
-| Vitality | Additional maximum health over the baseline 14 | 12 |
-| Ward | Starting guard each wave | 3 |
-| Focus | Starting momentum each route | 2 |
-| Leech | Heal after retaliation on routes with at least 5 kills; cannot revive a lethal hit | 2 |
-| Bulwark | Gain guard after a route with 1–3 kills; total guard cap 4 | 2 |
+Affix rolls may choose the same trait and merge. Rarity is not a universal power ranking. All socketed rarities receive individual Sigil bonuses, but **only Normal bases** form Bindings. Epic blade/shield/coat/staff/charm/relic respectively receive Venom/Counter/Spellstep/Cover strike/Stride/Heartbloom +1.
 
-Only items inside the backpack count. Rune bonuses, runewords, upgrades, set bonuses and corruption modifiers combine before these caps. An extra modifier may free packing space without increasing an already capped trait.
+Per kill: 4% gear, 2% common Sigil, independent matching exclusive roll, one scrap. Each regular wave clear gives one gear; boss clear gives one gear plus one bonus gear. Common Sigils are guaranteed after waves2,4,5. Each of those six clear/boss reward sources gives four scrap. Boss victory gives one Warden mark. Rewards are committed once alongside the turn checkpoint.
 
-## Sockets and runewords
+The first four waves contain38 enemies total. The boss can end the last wave before all minions die, so a win usually has39–46 kills. Expected gear:6 + kills×0.04 =7.56–7.84. Expected common Sigils:3 + kills×0.02 =3.78–3.92. Exclusive Sigils are **additional** to those common quantities.
 
-Open **Runes**, select a numbered socket, then choose an available rune. Rune removal is free and returns the rune to your pouch, encouraging experimentation. Rune counts persist. Socket limits are 1–3 depending on the base; they do not change backpack size.
+Corruption shards:0.1% per regular kill and25% on the Warden kill; no guaranteed shard per victory. A46-kill clear averages0.295 shards before considering run failures. Corruption odds below remain unchanged.
 
-| Rune | Individual effect |
-| --- | --- |
-| Ash | Edge +1 |
-| Root | Vitality +2 |
-| Gale | Focus +1 |
-| Stone | Ward +1 |
-| Ember | Bulwark +1 |
-| Echo | Leech +1 |
+## Sigil hunting
 
-Runewords require a **normal base**, the exact socket count, the permitted base type, and the exact rune order. Magic/rare/unique/set gear can use ordinary rune bonuses but cannot form runewords. The recipe book is visible in the rune screen; no external lookup is required.
+Common pool: Ash (Edge1), Root (Vitality2), Gale (Focus1), Stone (Ward1), Ember (Bulwark1), Echo (Leech1), all equally weighted within a common drop.
 
-| Runeword | Order | Bases | Additional bonus beyond the runes |
+| Enemy | Exclusive Sigil | Effect | Chance per matching kill |
+| --- | --- | --- | ---: |
+| Briar Scout |Trail |Stride1 |3% |
+| Shellback |Carapace |Bulwark1 + Counter1 |3% |
+| Thorn Archer |Barb |Cover strike2 |3% |
+| Fen Viper |Venom |Venom2 |3% |
+| Ash Brute |Ruin |Armor break2 |3% |
+| Ruin Hexer |Hex |Spellstep1 |3% |
+| Heartroot Warden |Heartroot |Leech1 + Heartbloom1 |15% plus protection |
+
+The Warden's Sigil is guaranteed on the10th kill without its exclusive drop. Any exclusive drop resets its counter. This persists across runs and reloads. Common drops do not reset that counter. Duplicate kill settlement cannot roll again or advance it. Protection raises the long-run effective drop rate above15%.
+
+Scout Expedition previews the exact seeded populations before starting. Rescout changes the seed without cost; no loot is awarded for scouting. Hunting Guide lists enemy behavior, exclusive source/effect/chance and current Warden dry streak. The current game contains one boss species; future bosses need their own mapping, counter and recipe.
+
+## Conditional effects and caps
+
+Basic caps: Edge2, Vitality12, Ward3, Focus2, Leech2, Bulwark2. Guard during a wave caps at4. Camp boons are applied separately and can exceed some permanent item caps.
+
+| Effect | Rule | Packed cap |
+| --- | --- | ---: |
+| Stride | Extra empty cells beyond the normal two per route |2 |
+| Counter | Spend one starting guard on the first route hit for +2 power |1 |
+| Cover strike | Extra first-hit power if the route starts on cover |3 |
+| Venom | Extra route-hit power against an enemy already below max HP |3 |
+| Armor break | Extra route-hit power against shellbacks and brutes |4 |
+| Spellstep | After a kill, gain guard if starting in old magic marks and landing outside all of them |2 |
+| Heartbloom | Extra healing on routes with at least five kills, after retaliation |2 |
+| Temper | Extra first-hit power against enemies with max HP≥4 |2 |
+
+Venom is **follow-up damage**, not a new damage-over-time status. The mob's existing poison remains separate. Conditional attack bonuses do not modify Reaver's secondary cleave. Heartbloom and Leech cannot revive lethal damage. Spellstep requires a kill to prevent farming guard by walking in place. The route preview and attack animation use the same reducer hit records.
+
+## Bindings
+
+Exact base type, exact socket count, exact order; retain individual Sigil bonuses in addition to the recipe bonus. Insert/removal is free. Wrong orders still grant individual effects. Adding an extra socket can deactivate a Binding.
+
+| Binding | Sigils in order | Eligible bases | Additional bonus |
 | --- | --- | --- | --- |
-| Briarsteel | Ash → Gale | Blade/staff, exactly 2 sockets | Edge +1, Focus +1 |
-| Trailguard | Root → Stone | Shield/coat, exactly 2 sockets | Bulwark +1, Ward +1 |
-| Cinderwake | Ember → Ash → Gale | Blade/staff, exactly 3 sockets | Edge +1, Focus +1 |
-| Waking Grove | Root → Echo → Stone | Coat/relic, exactly 3 sockets | Leech +1, Vitality +3 |
+| Briarsteel |Ash → Gale |blade/staff |Edge1, Focus1 |
+| Trailguard |Root → Stone |shield/coat |Bulwark1, Ward1 |
+| Cinderwake |Ember → Ash → Gale |blade/staff |Edge1, Focus1 |
+| Waking Grove |Root → Echo → Stone |coat/relic |Leech1, Vitality3 |
+| Trailweft |Gale → Trail |blade/staff |Stride1, Focus1 |
+| Ironbloom |Stone → Carapace → Echo |coat/relic |Counter1, Bulwark1 |
+| Thornflight |Gale → Barb → Ash |blade/staff |Cover strike2, Stride1 |
+| Venomwake |Ash → Venom |blade/staff |Venom2 |
+| Ashbreaker |Stone → Ruin |shield/blade |Armor break2 |
+| Hexweave |Gale → Hex → Stone |staff/coat |Spellstep1, Ward1 |
+| Heartwake |Root → Heartroot → Echo |coat/relic |Heartbloom1, Vitality2 |
 
-Wrong orders still give ordinary rune effects. Removing a required rune or adding an extra socket deactivates the word. Upgrade tier and corruption do not invalidate an otherwise matching word.
+## Upgrades and destruction
 
-## Sets
+Each level costs6×target level scrap:6,12,18,24,30,36. +1–+3 always succeed. +4/+5/+6 have5%/10%/20% destruction respectively. There is no no-change roll. The item and all inserted Sigils are permanently lost on destruction; scrap is spent either way. Safe upgrades show their cost on the button. Risky attempts require a modal quote with odds, next effect and loss warning. Stale/double confirmations cannot trigger another tier.
 
-**Warden:** shield, coat, charm. Two distinct parts give Ward +1; three also give Bulwark +1 and Leech +1.
+Each level adds +1 to its listed trait, cumulative:
 
-**Wayfarer:** blade, staff, relic. Two distinct parts give Vitality +2; three also give Focus +1 and Leech +1.
+| Base | +1 | +2 | +3 | +4 | +5 | +6 |
+| --- | --- | --- | --- | --- | --- | --- |
+| Blade |Edge |Vitality |Focus |Temper |Vitality |Temper |
+| Shield |Ward |Vitality |Bulwark |Counter |Vitality |Temper |
+| Coat |Vitality |Vitality |Ward |Spellstep |Vitality |Heartbloom |
+| Staff |Focus |Vitality |Ward |Cover strike |Vitality |Temper |
+| Charm |Vitality |Vitality |Bulwark |Stride |Vitality |Heartbloom |
+| Relic |Leech |Vitality |Ward |Heartbloom |Vitality |Temper |
 
-Duplicate copies of the same base do not count as different set parts. The whole set must be packed to supply its bonuses.
+These spread gains across traits so safe upgrades do not merely saturate one capped stat. Current aggregate caps can still reduce a particular upgrade's immediate value.
 
-## Forging and corruption
+One corruption shard buys one attempt:90% adds +2 to one random trait from the full trait pool,10% destroys the item and its inserted Sigils. A modifier may be irrelevant to the current build or capped. Successful corruption seals further upgrades and socket additions; Sigil insertion/removal remains possible. The full +4→+5→+6→corruption sequence has61.56% survival, before any usefulness judgment. No passive item decay or gear loss on death.
 
-Upgrade costs: 6, 12, 18 scrap for tiers +1, +2, +3. Each tier increases that base's inherent trait by 1. Rolled traits and socketed runes are preserved.
+Adding sockets still costs8 +4×existing socket count, up to the base limit (1–3). Salvage is separately confirmed, gives3 +2×tier scrap and returns inserted Sigils. Removing valuable Sigils before risky forging protects the Sigils, but breaks their Binding until reinserted.
 
-Adding a socket costs 8 + 4 × the current socket count, up to the base limit. Adding a third socket to a completed two-rune word intentionally deactivates it; its exact-count requirement still applies.
+## Sets and duplicate protection
 
-One corruption shard buys one attempt:
+Warden: shield/coat/charm; two distinct parts grant Ward1; three add Bulwark1/Leech1. Wayfarer: blade/staff/relic; two grant Vitality2; three add Focus1/Leech1. Duplicate bases do not count twice.
 
-- **90%:** add +2 to one randomly chosen trait. The upgrade tier and socket count are then sealed.
-- **10%:** permanently delete the item and all inserted runes.
+At home: Forge Guide → Set collection. Six Warden marks buy the chosen base's Set version. A mark is granted once per boss victory. This is a deterministic missing-piece route; it does not change the random2% Set drop rate. Marks cannot be redeemed at camp.
 
-You can corrupt an active runeword or set piece. Successfully corrupted items still allow inserting/removing runes, and still contribute their normal set/runeword effects. You cannot corrupt an item again, upgrade it again, or add more sockets after success. The game displays the odds and asks for explicit in-game confirmation before spending the shard.
-
-These are Thornwake's own initial design probabilities, not claimed rates from Diablo, Path of Exile or Project Diablo 2. Outcomes are saved immediately during normal operation. This is offline local storage, not tamper-resistant anti-cheat.
-
-Salvage is a separate confirmation: delete an item for 3 + 2 × upgrade-tier scrap and recover its socketed runes.
-
-## Drops, persistence and run flow
-
-Per defeated enemy, independent rolls: 12% gear, 10% rune, 3% corruption shard, plus 1 scrap. A clear grants a guaranteed gear item and rune, 4 scrap, and an additional 3% shard roll. Multiple drops can occur together. Gear quality odds conditional on a gear drop: 28% normal, 32% magic, 25% rare, 7% unique, 8% set. Base type is chosen uniformly. A dropped item has a 30% chance to start with one empty socket.
-
-The starting profile has six sample items, two of each rune, 18 scrap and two corruption shards so you can test every system without first grinding. Gear is active only if packed. New drops are automatically collected and saved at move completion. Collected gear/runes remain after defeat or app closure; an unfinished combat turn has not awarded its loot yet.
-
-Every loot source uses a run identifier and source key to avoid duplicate awards. Retrying creates a new expedition; farming repeated runs is allowed. Active encounters and camp selections resume after reopening the app. Crafting and backpack changes save immediately. Legacy Phase 1 counters/settings are retained and receive a starter gear profile when absent.
-
-At a new grove, packed bonuses are snapshotted for combat. Camp gear changes preserve missing health, then apply the usual +3 camp recovery; swapping Vitality does not grant a separate free full heal. The tutorial intentionally uses baseline combat without gear modifiers.
-
+All odds are initial Thornwake design values, not claimed industry benchmarks. Offline saves remain editable; this is not tamper-resistant server storage.

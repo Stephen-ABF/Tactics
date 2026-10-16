@@ -1,4 +1,4 @@
-# Thornwake Expeditions — v0.4.0
+# Thornwake Expeditions — v0.5.0
 
 A complete offline puzzle-action prototype for **Godot 4.7.2 stable**, standard GDScript edition, Compatibility renderer. Android portrait is the initial target. The board is 3D with procedural character animation and replaceable placeholder art.
 
@@ -6,7 +6,7 @@ A complete offline puzzle-action prototype for **Godot 4.7.2 stable**, standard 
 
 ## Play
 
-Open `project.godot` in Godot 4.7.2 and press F5. Try **Practice** first, then pack gear and begin an expedition. No addons, accounts or network connection are needed to play.
+Open `project.godot` in Godot 4.7.2 and press F5. Choose **Learn to play** first, then pack gear and scout an expedition. The scout report previews exact populations; Rescout changes the seeded hunt. No addons, accounts or network connection are needed to play.
 
 Tap adjoining cells to plan a route; tap **Strike** to watch the adventurer dash, attack and take retaliation. Undo/Clear revise the plan without spending a turn. Two empty cells are allowed per route, plus Trail Boots bonuses. Paths cannot revisit cells. Weak attacks chip an armored foe and end movement before it. Momentum rewards chaining weaker enemies before attacking armor. The preview shows retaliation at your destination before committing.
 
@@ -24,7 +24,7 @@ Tap adjoining cells to plan a route; tap **Strike** to watch the adventurer dash
 
 Four seeded regular zones—Briarwood, Ashen Hollow, Frostfen and Moonlit Ruins—lead to Heartroot Sanctum. Layouts, terrain, enemy populations and camp choices vary reproducibly by seed. Camps offer one of two expedition boons, a stance switch and access to field loot/backpack crafting. Defeating the Warden wins immediately. Dying ends the run; packed gear and collected finds remain yours.
 
-A win unlocks the next of five Depths. Higher Depths raise enemy health and eventually damage. Early runs use the full baseline mechanic. There are six gear bases, six runes, four exact-order runewords, two sets, upgrades, sockets and one-time 90% beneficial / 10% destructive corruption. See [gearing rules](docs/GEARING.md).
+A win unlocks the next of five Depths. Higher Depths raise enemy health and eventually damage. Early runs use the full baseline mechanic. There are six gear bases, six rarity categories, thirteen Sigils, eleven exact-order Bindings, two sets, +6 upgrades (safe through +3, then 5%/10%/20% destruction), sockets and one-time 90% modifier / 10% destructive corruption. Matching enemies drop exclusive Sigils; the Warden has saved bad-luck protection. Six victory marks buy a chosen Set piece. See [gearing rules](docs/GEARING.md) and the [v0.5.0 update brief](docs/UPDATE_v0.5.0.md).
 
 ## Phase 3 scope and status
 
@@ -38,7 +38,7 @@ This is a **tested development candidate**, not a published store release. Actua
 | --- | --- |
 | `scripts/content.gd` | Board sizes, zone palettes, enemy HP/damage, camp boons |
 | `scripts/rules.gd` | Population/layout generation, momentum, healing, boss patterns and Depth scaling |
-| `scripts/gear.gd` | Shapes, affixes, caps, recipes, costs, drop rates and corruption odds |
+| `scripts/gear.gd` | Shapes, affixes, caps, Sigil sources, recipes, risks, costs, drop rates and corruption odds |
 | `scripts/board.gd`, `actor.gd` | Camera, effects, attack animation and procedural geometry |
 | `scripts/main.gd` | UI, checkpoints, wave transitions and settlement |
 | `scripts/save_store.gd` | Save validation/backup and local JSONL events |
@@ -59,4 +59,4 @@ For local Android export, install matching Godot export templates, JDK 17 and th
 
 [Artist handoff](docs/ART_HANDOFF.md), [asset licenses](docs/ASSETS.md), [playtest hypotheses](docs/PLAYTEST.md), [store checklist](docs/RELEASE.md).
 
-Biggest unresolved risk: strong gear makes Depth 1 easy, while higher Depths have not had human balance testing. The most valuable next improvement is tuning distinct enemy/gear combinations from observed player decisions and immediate retries. Run length targets 3–6 minutes, but has not been measured with people.
+Biggest unresolved risk: strong gear makes Depth 1 easy, while higher Depths have not had human balance testing. The most valuable next improvement is tuning distinct enemy/gear combinations from observed player decisions and immediate retries. Run length targets 6–9 minutes including camps, but has not been measured with people.

@@ -38,7 +38,7 @@ jobs:
           set -euo pipefail
           mkdir -p builds
           "$GODOT_BIN" --headless --path . --export-debug 'Windows Desktop' builds/Thornwake.exe
-          "$GODOT_BIN" --headless --path . --export-pack 'Windows Desktop' builds/Thornwake-v0.4.0.pck
+          "$GODOT_BIN" --headless --path . --export-pack 'Windows Desktop' builds/Thornwake-v0.5.0.pck
       - name: Configure existing Android SDK and debug signing
         shell: bash
         run: |
@@ -62,9 +62,10 @@ jobs:
       - uses: actions/upload-artifact@v7.0.2
         if: always()
         with:
-          name: Thornwake-v0.4.0-test-builds
+          name: Thornwake-v0.5.0-test-builds
           path: |
             builds/
             tests/balance_results.json
+            tests/economy_results.json
           if-no-files-found: warn
           retention-days: 14

@@ -28,6 +28,10 @@ var depth=1
 var bank=0
 var total_kills=0
 var active_seconds=0.0
+var camp_seconds=0.0
+var planning_seconds=0.0
+var animation_seconds=0.0
+var app_active=true
 var settled=true
 var paused=false
 var busy=false
@@ -54,7 +58,13 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(layout)
 	layout();persist();show_title()
 func _process(delta: float) -> void:
-	if screen=="game" and not paused:active_seconds+=minf(delta,1.0)
+	if not app_active:return
+	var seconds=minf(delta,1.0)
+	if screen=="game" and not paused:
+		active_seconds+=seconds
+		if busy:animation_seconds+=seconds
+		else:planning_seconds+=seconds
+	elif screen=="camp":camp_seconds+=seconds
 static func fit_canvas(available: Rect2) -> Dictionary:
 	var factor=maxf(0.01,minf(available.size.x/600.0,available.size.y/1000.0))
 	return {"scale":factor,"position":available.position+(available.size-Vector2(600,1000)*factor)*0.5}
@@ -109,6 +119,10 @@ func normalize_snapshot(raw: Dictionary) -> Dictionary:
 	for key in ["bank","total_kills","run_loot","seconds"]:
 		if not (copy.get(key) is int or copy.get(key) is float) or copy[key]<0:return {}
 	copy.bank=int(copy.bank);copy.total_kills=int(copy.total_kills);copy.run_loot=int(copy.run_loot);copy.seconds=float(copy.seconds)
+	for key in ["camp_seconds","planning_seconds","animation_seconds"]:
+		var value=copy.get(key,0.0)
+		if not (value is int or value is float) or value<0:return {}
+		copy[key]=float(value)
 	copy.stance=copy.get("stance",checked.stance)
 	if copy.stance not in ["Duelist","Reaver"]:return {}
 	copy.choice=str(copy.get("choice",""))
@@ -116,35 +130,53 @@ func normalize_snapshot(raw: Dictionary) -> Dictionary:
 	return copy
 func checkpoint(phase: String="game") -> void:
 	if training or settled:return
-	prefs.run={"version":1,"phase":phase,"state":state.duplicate(true),"id":run_id,"stance":stance,"boons":boons.duplicate(),"choice":selected_boon,"bank":bank,"total_kills":total_kills,"run_loot":run_loot,"seconds":active_seconds}
+	prefs.run={"version":1,"phase":phase,"state":state.duplicate(true),"id":run_id,"stance":stance,"boons":boons.duplicate(),"choice":selected_boon,"bank":bank,"total_kills":total_kills,"run_loot":run_loot,"seconds":active_seconds,"camp_seconds":camp_seconds,"planning_seconds":planning_seconds,"animation_seconds":animation_seconds}
 	persist()
 func show_title() -> void:
 	clear_screen();screen="title"
 	text("T H O R N W A K E",36,64,528,65,42)
-	text("THE EXPANDING WILD",39,133,522,35,17,Color("a5c4a7"))
+	text("SIGILS OF THE WILD",39,133,522,35,17,Color("a5c4a7"))
 	text("3 x 3 → 4 x 4 → 5 x 5\n6 x 6 → HEARTROOT WARDEN",39,205,522,100,27)
-	text("Pack your gear. Read the danger.\nReclaim five changing battlegrounds.",39,320,522,65,21)
+	text("Pack. Hunt Sigils. Forge Bindings.\nReclaim five changing battlegrounds.",39,320,522,65,21)
 	button("Depth %d / %d" % [depth,prefs.unlocked_depth],Rect2(36,415,254,56),func():depth=depth%prefs.unlocked_depth+1;show_title())
 	button("Stance: "+stance,Rect2(310,415,254,56),func():stance="Reaver" if stance=="Duelist" else "Duelist";show_title())
 	if not prefs.run.is_empty():
 		button("RESUME WAVE %d" % (prefs.run.state.encounter+1),Rect2(36,501,528,64),resume_run,true)
 		button("New expedition…",Rect2(36,579,528,58),confirm_new)
-	else:button("BEGIN EXPEDITION",Rect2(36,527,528,68),func():start_run(false),true)
+	else:button("SCOUT EXPEDITION",Rect2(36,527,528,68),show_hunt_preview,true)
 	button("Backpack & forge",Rect2(36,665,528,60),func():open_pack(false))
 	button("Learn to play",Rect2(36,740,254,56),func():show_help(true))
-	button("Enemy codex",Rect2(310,740,254,56),show_codex)
+	button("Hunting guide",Rect2(310,740,254,56),show_codex)
 	button("Settings",Rect2(36,812,528,54),show_settings)
-	text("v0.4.0 • PHASE 3 LOCAL TEST BUILD\n%d wins / %d runs • %d supplies" % [prefs.wins,prefs.runs,prefs.materials],39,890,522,62,16,Color("9ab3a4"))
+	text("v0.5.0 • SIGILS & RISK TEST BUILD\n%d wins / %d runs • %d supplies" % [prefs.wins,prefs.runs,prefs.materials],39,890,522,62,16,Color("9ab3a4"))
 	text("Save failed; check writable storage." if save_failed else title_notice,39,955,522,35,16,Color("e7b098"))
 func confirm_new() -> void:
 	modal("START A NEW EXPEDITION?","Your saved encounter will end. Packed gear and collected loot stay safe.","new")
 	modal_button("End saved run & start",750,func():resume_run();finish_run(false,"abandon");start_run(false),true)
 	modal_button("Cancel",835,close_modal)
+func expedition_seed() -> int:
+	return int(Time.get_unix_time_from_system())%1000000
+func show_hunt_preview(requested_seed: int=-1) -> void:
+	var proposed_seed=expedition_seed() if requested_seed<0 else requested_seed
+	var lines=["Seed %d • Depth %d\nCommon Sigils: 2%% from every enemy.\n" % [proposed_seed,depth]]
+	for wave in 5:
+		var sample=Rules.new_board(proposed_seed,wave,stance,14,{},depth)
+		var counts={}
+		for tile in sample.tiles:
+			if Rules.enemy(tile):counts[tile.kind]=int(counts.get(tile.kind,0))+1
+		var foes=[]
+		for kind in counts:foes.append("%s ×%d" % [Content.ENEMIES[kind].name,counts[kind]])
+		lines.append("Wave %d • %s\n%s" % [wave+1,Content.ZONES[sample.zone].name,", ".join(foes)])
+	modal("EXPEDITION SCOUT REPORT","","scout")
+	modal_scroll("\n\n".join(lines),Rect2(36,190,528,560))
+	modal_button("Begin this expedition",800,func():close_modal();start_run(false,proposed_seed),true)
+	button("Rescout",Rect2(36,882,254,60),func():show_hunt_preview((proposed_seed+7919)%1000000),false,overlay)
+	button("Back",Rect2(310,882,254,60),close_modal,false,overlay)
 func start_run(tutorial: bool=false,requested_seed: int=-1) -> void:
 	if not prefs.run.is_empty() and not settled and not tutorial:return
 	training=tutorial;run_id=Gear.uid();run_loot=0;boons=[];selected_boon=""
 	seed_value=14026 if tutorial else (requested_seed if requested_seed>=0 else int(Time.get_unix_time_from_system())%1000000)
-	encounter=0;bank=0;total_kills=0;active_seconds=0;settled=false
+	encounter=0;bank=0;total_kills=0;active_seconds=0;camp_seconds=0;planning_seconds=0;animation_seconds=0;settled=false
 	if not tutorial:Gear.bank_field(prefs.gear)
 	var bonus={} if tutorial else Content.combine(Gear.bonuses(prefs.gear),boons)
 	state=Rules.new_board(seed_value,0,stance,Rules.MAX_HP+int(bonus.get("vitality",0)),bonus,1 if tutorial else depth)
@@ -154,7 +186,7 @@ func resume_run() -> void:
 	var saved=normalize_snapshot(prefs.run)
 	if saved.is_empty():prefs.run={};Gear.bank_field(prefs.gear);persist();show_title();return
 	state=saved.state;seed_value=state.seed;encounter=state.encounter;depth=state.depth;stance=saved.stance
-	run_id=saved.id;boons=saved.boons;bank=saved.bank;total_kills=saved.total_kills;run_loot=saved.run_loot;active_seconds=saved.seconds;selected_boon=saved.choice
+	run_id=saved.id;boons=saved.boons;bank=saved.bank;total_kills=saved.total_kills;run_loot=saved.run_loot;active_seconds=saved.seconds;camp_seconds=saved.camp_seconds;planning_seconds=saved.planning_seconds;animation_seconds=saved.animation_seconds;selected_boon=saved.choice
 	training=false;settled=false
 	Save.log_event("run_resume",{"id":run_id,"wave":encounter})
 	if saved.phase=="camp":show_camp()
@@ -208,20 +240,21 @@ func clear_route() -> void:
 func execute_move() -> void:
 	if paused or busy or screen!="game":return
 	pending=Rules.resolve(state,route)
+	pending.route_cells=route.size()
 	if not pending.valid:return
 	busy=true;strike_button.disabled=true;board.start_animation(route);audio.tone(240,0.16)
-func loot(source: String,guaranteed: bool=false) -> Array:
+func loot(source: String,options: Dictionary={}) -> Array:
 	var key=run_id+":"+source
 	var rng=RandomNumberGenerator.new();rng.seed=hash(key)
-	var finds=Gear.roll_loot(prefs.gear,key,rng,guaranteed)
+	var finds=Gear.roll_loot(prefs.gear,key,rng,options)
 	run_loot+=finds.size()
-	if not finds.is_empty():Save.log_event("loot_drop",{"id":run_id,"source":key,"finds":finds})
+	if not finds.is_empty():Save.log_event("loot_drop",{"id":run_id,"source":key,"channel":options,"finds":finds})
 	return finds
 func commit_move() -> void:
 	if not busy:return
 	var previous=int(state.kills)
 	state=pending.state;route=[];busy=false;update_preview()
-	Save.log_event("move",{"id":run_id,"wave":encounter,"turn":state.turn,"kills":pending.kills,"damage":pending.damage,"healing":pending.healing,"momentum":pending.momentum})
+	Save.log_event("move",{"id":run_id,"wave":encounter,"turn":state.turn,"kills":pending.kills,"damage":pending.damage,"healing":pending.healing,"momentum":pending.momentum,"route_cells":pending.get("route_cells",0)})
 	if training:
 		if pending.kills>0:
 			prefs.tutorial=true;persist();Save.log_event("tutorial_complete")
@@ -232,12 +265,13 @@ func commit_move() -> void:
 			modal_button("Title",845,show_title)
 		return
 	var finds=[]
-	for number in range(previous+1,int(state.kills)+1):finds.append_array(loot("kill:%d:%d" % [encounter,number]))
+	for i in pending.defeated.size():
+		finds.append_array(loot("kill:%d:%d" % [encounter,previous+i+1],{"type":"mob","kind":pending.defeated[i].kind}))
 	if state.status=="won":
-		finds.append_array(loot("clear:%d" % encounter,true))
+		finds.append_array(loot("clear:%d" % encounter,{"type":"clear","wave":encounter}))
 		bank+=state.materials;total_kills+=state.kills
 		if encounter==4:
-			finds.append_array(loot("boss",true));prefs.gear.shards+=1
+			finds.append_array(loot("boss",{"type":"boss_reward"}))
 			finish_run(true,"boss");return
 		selected_boon="";show_camp();checkpoint("camp");return
 	if state.status=="lost":finish_run(false,"health");return
@@ -280,7 +314,7 @@ func finish_run(won: bool,reason: String="health") -> void:
 		Gear.bank_field(prefs.gear);prefs.runs+=1
 		if won:prefs.wins+=1;prefs.unlocked_depth=mini(5,maxi(prefs.unlocked_depth,depth+1))
 		prefs.materials+=bank;prefs.best=maxi(prefs.best,total_kills+(int(state.kills) if state.status!="won" else 0));prefs.run={};persist()
-	Save.log_event("run_end",{"id":run_id,"won":won,"reason":reason,"seconds":active_seconds,"wave":encounter,"loot":run_loot,"depth":depth})
+	Save.log_event("run_end",{"id":run_id,"won":won,"reason":reason,"seconds":active_seconds,"camp_seconds":camp_seconds,"planning_seconds":planning_seconds,"animation_seconds":animation_seconds,"wave":encounter,"loot":run_loot,"depth":depth})
 	last_finished=Time.get_ticks_msec();clear_screen();screen="results"
 	text("THE HEARTROOT FALLS" if won else "ROOTS HOLD FAST",36,110,528,80,34)
 	text("Expedition won" if won else "Your gear and collected loot are safe.",36,230,528,70,24)
@@ -331,15 +365,16 @@ func show_help(begin_training: bool) -> void:
 	modal_button("Practice a strike" if begin_training else "Back",850,func():
 		if begin_training:training=true;start_run(true)
 		else:close_modal(),true)
+func modal_scroll(value: String,rect: Rect2) -> void:
+	var body=overlay.get_child(2);overlay.remove_child(body);body.queue_free()
+	var scroll=ScrollContainer.new();scroll.position=rect.position;scroll.size=rect.size;overlay.add_child(scroll)
+	var label=Label.new();label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;label.custom_minimum_size=Vector2(rect.size.x-28,0);label.add_theme_font_size_override("font_size",19);label.text=value;scroll.add_child(label)
 func show_codex() -> void:
-	var lines=[]
-	for kind in Content.ENEMIES:lines.append(Content.ENEMIES[kind].name+": "+Content.ENEMIES[kind].help)
-	modal("ENEMY CODEX","\n\n".join(lines),"codex")
-	# Codex is scrollable for readable mobile text.
-	var body=overlay.get_child(2)
-	overlay.remove_child(body);body.queue_free()
-	var scroll=ScrollContainer.new();scroll.position=Vector2(36,190);scroll.size=Vector2(528,600);overlay.add_child(scroll)
-	var label=Label.new();label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;label.custom_minimum_size=Vector2(500,0);label.add_theme_font_size_override("font_size",21);label.text="\n\n".join(lines);scroll.add_child(label)
+	var lines=["Common Sigils: 2%% from any enemy. Exclusive Sigils roll separately: 3%% from their matching regular enemy; 15%% from the Warden. Warden Sigil guaranteed by the 10th kill without one.\nWarden dry streak: %d / 9.\n" % int(prefs.gear.boss_pity.get("B",0))]
+	for kind in Content.ENEMIES:
+		lines.append(Content.ENEMIES[kind].name+": "+Content.ENEMIES[kind].help+"\n"+Gear.sigil_help(Gear.EXCLUSIVES[kind]))
+	modal("HUNTING GUIDE","","codex")
+	modal_scroll("\n\n".join(lines),Rect2(36,190,528,600))
 	modal_button("Back",850,close_modal,true)
 func open_pack(at_camp: bool) -> void:
 	if busy or is_instance_valid(pack_ui):return
@@ -371,7 +406,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("ui_accept") and not overlay and not is_instance_valid(pack_ui):execute_move()
 func _notification(what: int) -> void:
 	if not is_instance_valid(canvas):return
+	if what in [NOTIFICATION_APPLICATION_FOCUS_IN,NOTIFICATION_APPLICATION_RESUMED]:app_active=true
 	if what in [NOTIFICATION_APPLICATION_FOCUS_OUT,NOTIFICATION_APPLICATION_PAUSED]:
+		app_active=false
 		if screen=="game" and not paused:pause_game()
 		elif screen=="camp":checkpoint("camp")
 	elif what==NOTIFICATION_WM_GO_BACK_REQUEST:back_action()

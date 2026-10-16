@@ -1,23 +1,52 @@
-# Thornwake Expeditions v0.4.0 — verification
+# Thornwake v0.5.0 — Sigils & risk verification
 
-Tested with Godot4.7.2 stable (`ed1daf0bf`), Linux, Compatibility renderer. Test runner completed successfully in an isolated player-data directory.
+Godot 4.7.2 stable (`ed1daf0bf`), Linux, Compatibility renderer. Local suites pass in isolated player-data directories. Test count: **18,664 assertions**, including repeated seeded sampling rather than independent human test cases.
 
-| Check | Observed result |
+| Suite | Observed result |
 | --- | --- |
-| Deterministic rules |6,337 assertions,0 failures;1,500 generated encounters;150 distinct6×6 layouts |
-| Gear |35 assertions,0 failures;97 destructive outcomes in1,000 seeded corruption samples |
-| UI/save/flow |113 assertions,0 failures |
-| Expedition integration |2 complete winning expeditions through touch-selection methods, animated commit, all camps/sizes, boss and results |
-| Greedy balance probe |18/18 Depth1 wins; baseline18–44 turns, starter14–23, strong11–19 |
-| CI exports |Windows debug EXE/PCK and signed Android debug APK successfully exported; no device execution |
-| Render review |Actual600×1000 Godot screenshots: title, all five waves, camp, settings, codex |
+| Rules |6,337 assertions; zero failures;1,500 generated encounters;150 distinct6×6 layouts |
+| Gear regression |35 assertions; zero failures;97 destructions in1,000 corruption samples |
+| Main flow/save |113 assertions; zero failures |
+| New economy/effects |12,158 assertions; zero failures |
+| Forge/hunt integration |21 assertions; zero failures |
+| Expedition integration |Two complete winning five-wave expeditions through selected routes, animations, camps, boss and results |
+| Balance probe |18/18 simulated Depth1 wins; baseline18–44 turns, new starter14–23, strong11–19 |
+| Render inspection |Actual600×1000 Godot renders: scout report, hunting guide, pack, risk quote, Sigil sockets, Binding book, Set collection |
 
-6,485 counted assertions include repeated generation checks, not independent user studies. Complete expedition tests fast-forward the animation clock; rendered review separately uses software OpenGL. No real Android input/performance or human playtesting has occurred.
+The test runner rejects script/runtime errors even if Godot exits with code0. Integration tests fast-forward animation time; rendered screens are reviewed separately with software OpenGL. Physical Android input, performance, battery and human playtests remain unverified.
 
-Coverage includes route bounds/cardinality/revisits/stride, armor chipping, momentum, stances, poison timing, guard prevention, consumed springs, brute charge/rest, hexer marks, boss telegraphs/enrage-next-turn/death, seeded layouts, save JSON validation, checkpoint roundtrip, camp selection/stance restoration, active gear lock, pause mid-animation, focus loss, safe-area fit math, every cell's perspective pick mapping at each board size, duplicate camp advancement, reward settlement once, depth unlock, malformed checkpoint rejection, backup recovery, crafting/runes/runewords/sets/corruption and placement atomicity.
+## New coverage
 
-A generated board always has legal initial movement and can chip armor; the tests do not prove that every possible seed/gear/Depth combination has a winning strategy. Higher Depths have sampled validity checks, not exhaustive balance validation. A greedy solver's wins do not establish fun, fairness or3–6 minute human run lengths.
+- Old Magic→Uncommon migration, retained gear/currencies, initialized exclusive pouch/marks/pity; +6 and exclusive sockets survive JSON roundtrip.
+- Every Binding's exact sequence, base and reachable socket count.
+- Actual conditional combat: guard spent for power, cover power, wounded-target follow-up, armor Temper, kill-required magic escape and five-kill healing. Reducer includes original killed species for loot, including cleaves.
+- +1–+3 safe; risk cannot spend without acceptance; correct cost on success or destruction; inserted Sigils consumed on destruction; stale target-level confirmation cannot advance another tier; maximum +6 preserved.
+- Actual UI risk quote/cancel/accept, repeated confirmation, immediate saved result; scrollable Sigil/recipe screens; Set selection and repeated claim spending guard.
+- Matching-exclusive source isolation, boss10th-kill guarantee/reset/reload, duplicate source guards, exactly-once boss mark.
+- Actual animated Warden kill passes species into the drop channel, triggers saved pity, banks mark and clears checkpoint; repeated completion cannot duplicate rewards.
+- Active planning, animation and camp time persisted separately; no background accumulation.
 
-Run `python3 tools/run_checks.py --godot /path/to/godot`. Render script requires a display: `godot --path . --script res://tests/visual_phase3.gd`. Use isolated user data for render scripts. GitHub Actions independently runs the tests and attempts debug exports; inspect its actual result before claiming an APK or EXE exists.
+## Seeded economy simulation — not human playtesting
 
-Known risks: early strong-gear dominance, unmeasured high-Depth difficulty, growing stash needs filters, no device QA, placeholder art, and no store-ready signing/assets/review. Phase3 source work is implemented; platform release acceptance remains outstanding.
+Actual GDScript loot functions,2,000 full clears of46 enemies, seed888:
+
+| Metric | Mean / observed |
+| --- | ---: |
+| Gear per clear |7.8525 |
+| Gear10th /50th /90th percentile |6 /8 /10 |
+| Common Sigils per clear |3.92 |
+| Corruption shards per clear |0.306 |
+
+Exclusive drops are additional to common quantities.100,000 rarity draws: Normal29,852; Uncommon31,981; Rare25,086; Epic9,062; Unique1,979; Set2,040.2,000 upgrade attempts per tier: +4 destroyed108; +5 destroyed187; +6 destroyed397.2,000 matching regular kills yielded54 exclusives in each controlled test; the same RNG stream was deliberately reused to verify source mapping. The Warden sample yielded369/2,000 due to saved pity, so effective rate exceeds its15% raw roll.
+
+`tests/economy_results.json` contains reproducible summaries. Fresh-profile full-clear simulations do not model failures, chosen enemy targets, repeated campaigns, item usefulness or long-term collection behavior. The6–9-minute run goal is unmeasured with humans. Higher Depth validity is sampled; winning strategies are not proven for every seed/loadout.
+
+## Export status and limitations
+
+Matching Android/Windows debug exports succeeded for v0.4.0. The v0.5.0 workflow independently reruns all checks and exports; use its actual successful artifact for the current build. No device execution or store submission is claimed. CI artifacts expire after14 days.
+
+CI generates a disposable debug signing key per run. Installing over an earlier CI APK may require uninstalling it, which removes app data. Use a consistent local debug keystore for ongoing Android progression testing; preserve test saves before changing signing/installations. Source save migration does not bypass Android signature checks.
+
+Known risks: optimized early builds are easy; higher Depth and new effect interactions need people; optional item destruction does not solve hoarding by itself; regular exclusive drops may take many runs with sparse populations; larger stash needs filters; art remains provisional.
+
+Run `python3 tools/run_checks.py --godot /path/to/godot`. `tests/visual_sigils.gd` requires a display and isolated user data. No remote analytics or personal information collection.

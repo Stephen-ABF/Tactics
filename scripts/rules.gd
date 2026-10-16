@@ -144,7 +144,7 @@ static func enemies_left(state: Dictionary) -> int:
 		if enemy(tile):count+=1
 	return count
 static func resolve(state: Dictionary,route: Array) -> Dictionary:
-	var result={"valid":false,"reason":"Choose an adjoining cell.","damage":0,"kills":0,"momentum":0,"guard_used":0,"hits":[],"attacks":[],"healing":0,"threats":[],"state":state.duplicate(true)}
+	var result={"valid":false,"reason":"Choose an adjoining cell.","damage":0,"kills":0,"momentum":0,"guard_used":0,"hits":[],"attacks":[],"defeated":[],"healing":0,"threats":[],"state":state.duplicate(true)}
 	var n=side(state)
 	if state.status!="playing" or route.is_empty() or route.size()>n*n:return result
 	var next: Dictionary=result.state
@@ -153,6 +153,7 @@ static func resolve(state: Dictionary,route: Array) -> Dictionary:
 	var gear: Dictionary=state.get("gear",{})
 	var momentum=int(gear.get("focus",0))
 	var strides=0
+	var first_attack=true
 	for step in route.size():
 		if not (route[step] is int or route[step] is float):return result
 		var i=int(route[step])
@@ -163,6 +164,13 @@ static func resolve(state: Dictionary,route: Array) -> Dictionary:
 		var tile: Dictionary=next.tiles[i]
 		if enemy(tile):
 			var power=1+momentum+int(gear.get("edge",0))+(int(gear.get("pierce",0)) if tile.kind in ["h","b"] else 0)
+			if tile.hp<tile.max_hp:power+=int(gear.get("wound",0))
+			if first_attack:
+				if state.tiles[state.player].kind=="c":power+=int(gear.get("cover_power",0))
+				if tile.max_hp>=4:power+=int(gear.get("temper",0))
+				if next.guard>0 and int(gear.get("counter",0))>0:
+					next.guard-=1;power+=2*int(gear.counter)
+				first_attack=false
 			var lethal=tile.hp<=power
 			result.attacks.append({"to":i,"power":power,"lethal":lethal,"cleave":false})
 			result.hits.append(i)
@@ -172,6 +180,7 @@ static func resolve(state: Dictionary,route: Array) -> Dictionary:
 					return result
 				tile.hp-=power
 			else:
+				result.defeated.append({"cell":i,"kind":tile.kind})
 				if tile.kind=="B":next.boss_defeated=true
 				momentum+=2 if tile.kind in ["h","b","B"] else 1
 				tile.kind=".";tile.hp=1
@@ -193,10 +202,19 @@ static func resolve(state: Dictionary,route: Array) -> Dictionary:
 				result.hits.append(i)
 				next.tiles[i].hp-=2
 				if next.tiles[i].hp<=0:
+					result.defeated.append({"cell":i,"kind":next.tiles[i].kind})
 					if next.tiles[i].kind=="B":next.boss_defeated=true
 					next.tiles[i].kind=".";next.tiles[i].hp=1
 					result.kills+=1
 				break
+	if int(gear.get("hexstep",0))>0 and result.kills>0:
+		var marked_start=false
+		var marked_landing=false
+		for mark in telegraphs(state):
+			if mark.type in ["w","B"]:
+				if state.player in mark.cells:marked_start=true
+				if cursor in mark.cells:marked_landing=true
+		if marked_start and not marked_landing:next.guard=mini(4,next.guard+int(gear.hexstep))
 	var spring=next.tiles[cursor].kind=="f"
 	if spring:next.poison=0;next.tiles[cursor].kind="."
 	# Boss defeat ends the encounter immediately; surviving minions do not retaliate.
@@ -215,7 +233,7 @@ static func resolve(state: Dictionary,route: Array) -> Dictionary:
 	next.poison=poison
 	next.hp=maxi(0,int(next.hp)-result.damage)
 	if next.hp>0:
-		var recovery=(int(gear.get("leech",0)) if result.kills>=5 else 0)+(2 if spring else 0)
+		var recovery=(int(gear.get("leech",0))+int(gear.get("bloom",0)) if result.kills>=5 else 0)+(2 if spring else 0)
 		result.healing=mini(recovery,int(next.max_hp)-int(next.hp))
 		next.hp+=result.healing
 	next.kills+=result.kills;next.materials+=result.kills;next.turn+=1
@@ -244,7 +262,7 @@ static func normalize_saved(raw: Dictionary) -> Dictionary:
 	if s.get("stance","") not in ["Duelist","Reaver"] or not s.get("gear") is Dictionary:return {}
 	s.boss_defeated=bool(s.get("boss_defeated",false))
 	var cleaned={}
-	for key in ["edge","vitality","ward","focus","leech","bulwark","stride","pierce"]:
+	for key in ["edge","vitality","ward","focus","leech","bulwark","stride","pierce","counter","cover_power","wound","hexstep","bloom","temper"]:
 		if s.gear.has(key):cleaned[key]=clampi(int(s.gear[key]),0,20)
 	s.gear=cleaned
 	for tile in s.tiles:

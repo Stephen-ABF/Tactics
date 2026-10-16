@@ -11,6 +11,7 @@ func check(ok: bool, message: String) -> void:
 func empty() -> Dictionary:
 	var p=G.fresh()
 	p.items=[]
+	for sigil in G.SIGILS:p.runes[sigil]=2
 	p.scrap=100
 	p.shards=100
 	return p
@@ -38,7 +39,7 @@ func _initialize() -> void:
 	G.insert_rune(p,sword.id,0,"Gale")
 	check(p.runes.Gale==2,"Occupied socket cannot consume rune")
 	G.insert_rune(p,sword.id,1,"Gale")
-	check(G.word(sword)=="Briarsteel" and G.quality(sword)=="runeword","Correct base, exact count and order activates word")
+	check(G.word(sword)=="Briarsteel" and G.quality(sword)=="binding","Correct base, exact count and order activates word")
 	check(G.item_stats(sword).edge==3,"Rune and runeword bonuses combine")
 	check(G.bonuses(p).edge==2,"Global edge cap applied")
 	G.remove_rune(p,sword.id,0)
@@ -114,10 +115,10 @@ func _initialize() -> void:
 	check(normalized.items.size()==p.items.size() and normalized.items[1].location=="stash","Duplicate IDs dropped and overlapping placements recovered to stash")
 	p=empty()
 	rng.seed=707
-	var drops=G.roll_loot(p,"unique-roll",rng,true)
+	var drops=G.roll_loot(p,"unique-roll",rng,{"type":"clear","wave":1})
 	check(p.items.size()==1 and drops.size()>=2,"Grove clear guarantees gear and rune")
 	before=p.duplicate(true)
-	check(G.roll_loot(p,"unique-roll",rng,true).is_empty() and p==before,"Loot source can be settled only once")
+	check(G.roll_loot(p,"unique-roll",rng,{"type":"clear","wave":1}).is_empty() and p==before,"Loot source can be settled only once")
 	G.bank_field(p)
 	check(p.items[0].location=="stash","Field finds become persistent stash gear")
 	var destroyed=0

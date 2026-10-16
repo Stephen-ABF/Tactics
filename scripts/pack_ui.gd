@@ -13,6 +13,7 @@ var socket_index=0
 var message="Select an item, then Place / Move and tap its top-left cell."
 var dialog: Control
 var grid: Control
+var confirmation_active=false
 func _ready() -> void:
 	size=Vector2(600,1000)
 	render()
@@ -42,7 +43,7 @@ func button(value: String, rect: Rect2, callback: Callable, parent: Node=null) -
 func clear() -> void:
 	for child in get_children():
 		remove_child(child); child.queue_free()
-	dialog=null
+	dialog=null;confirmation_active=false
 func selected_item() -> Dictionary:
 	return Gear.find(profile,selected)
 func change(event: String, data: Dictionary={}) -> void:
@@ -54,14 +55,14 @@ func render() -> void:
 	bg.color=Color("101f24"); bg.size=size
 	add_child(bg)
 	label("PACK & FORGE",Rect2(36,22,285,48),28)
-	button("Help",Rect2(340,20,104,52),help_dialog)
+	button("Guide",Rect2(340,20,104,52),help_dialog)
 	button("Done",Rect2(460,20,104,52),func(): closed.emit())
 	grid=Grid.new()
 	grid.profile=profile; grid.selected=selected
 	grid.position=Vector2(63,95); grid.size=Vector2(474,395)
 	grid.cell_clicked.connect(cell_click)
 	add_child(grid)
-	label("Scrap %d   Shards %d   •   6 x 5 backpack" % [profile.scrap,profile.shards],Rect2(36,500,528,28),19)
+	label("Scrap %d • Shards %d • Marks %d" % [profile.scrap,profile.shards,profile.marks],Rect2(36,500,528,28),19)
 	label(Gear.describe_stats(Gear.bonuses(profile))+" (caps apply)",Rect2(36,531,528,48),16,Color("b4d5b7"))
 	var available=[]
 	for item in profile.items:
@@ -92,9 +93,9 @@ func render() -> void:
 	button("Place / Move",Rect2(36,780,168,50),func(): placing=true; message="Tap the top-left cell for the selected shape."; render())
 	button("To stash" if not camp else "To field",Rect2(216,780,168,50),unpack)
 	button("Rotate 90",Rect2(396,780,168,50),func(): message=Gear.rotate(profile,selected); change("gear_rotate"))
-	button("Upgrade",Rect2(36,838,168,50),func(): message=Gear.upgrade(profile,selected); change("gear_upgrade"))
+	button("Upgrade"+(" +%d (%d)" % [item.tier+1,(item.tier+1)*6] if not item.is_empty() and item.tier<6 else ""),Rect2(36,838,168,50),upgrade_dialog)
 	button("Add socket",Rect2(216,838,168,50),func(): message=Gear.add_socket(profile,selected); change("gear_socket"))
-	button("Runes",Rect2(396,838,168,50),socket_dialog)
+	button("Sigils",Rect2(396,838,168,50),socket_dialog)
 	button("CORRUPT",Rect2(36,896,254,50),corruption_dialog)
 	button("Salvage",Rect2(310,896,254,50),salvage_dialog)
 	label(message,Rect2(36,953,528,42),16,Color("b9d0b4"))
@@ -124,32 +125,78 @@ func panel(title: String) -> void:
 	shade.size=size; shade.color=Color("0b1b21")
 	dialog.add_child(shade)
 	label(title,Rect2(36,45,528,70),30,Color("e4e9d9"),dialog)
+func scroll_copy(value: String,rect: Rect2,font_size: int=19) -> void:
+	var scroll=ScrollContainer.new();scroll.position=rect.position;scroll.size=rect.size;dialog.add_child(scroll)
+	var copy=Label.new();copy.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;copy.custom_minimum_size=Vector2(rect.size.x-24,0)
+	copy.add_theme_font_size_override("font_size",font_size);copy.text=value;scroll.add_child(copy)
 func help_dialog() -> void:
-	panel("YOUR BACKPACK IS YOUR BUILD")
-	label("All packed items are active. Rotate and arrange shapes; there are no armor or weapon slots.\n\nEdge: + hit power (cap 2).\nVitality: + max HP (cap 12).\nWard: starting guard per grove (cap 3).\nFocus: starting momentum per route (cap 2).\nLeech: heal on 5+ kills, after retaliation (cap 2).\nBulwark: guard on 1–3-kill routes (cap 2).\n\nWarden set: 2 distinct pieces +1 Ward; 3 adds +1 Bulwark and Leech.\nWayfarer set: 2 pieces +2 Vitality; 3 adds +1 Focus and Leech.\n\nAt camp, only packed gear and this run's new field finds are accessible. Return home for the full stash.",Rect2(36,138,528,660),19,Color("d8e2d2"),dialog)
+	panel("PACK & FORGE GUIDE")
+	var body="All packed items are active. Rotate shapes; no body equipment slots. Caps apply across your entire backpack.\n\nFIRST BINDING: select your starting blade, open Sigils, insert Ash in socket 1 and Gale in socket 2. Briarsteel activates.\n\nUpgrades +1 to +3 are safe. +4: 5% destruction; +5: 10%; +6: 20%. Costs 6 × target level scrap. Each level adds the trait shown before upgrading; caps can limit current benefit.\n\nCorruption: 90% random +2 modifier, 10% destroys gear and inserted Sigils. One attempt; success seals upgrades/socket count. Sigil removal remains free.\n\nEdge: hit power (cap 2). Vitality: max HP (12). Ward: starting guard (3). Focus: starting momentum (2). Leech: heal on 5+ kills, after damage (2). Bulwark: guard on 1–3 kills (2).\n\n"
+	for stat in Gear.EFFECT_HELP:body+=Gear.stat_name(stat)+": "+Gear.EFFECT_HELP[stat]+"\n\n"
+	body+="Warden set: 2 distinct pieces +1 Ward; 3 adds Bulwark/Leech. Wayfarer: 2 pieces +2 Vitality; 3 adds Focus/Leech.\n\nHome stash is unavailable at camp. New field finds can be packed there. Warden victories grant a mark; 6 marks buy a chosen set piece at home."
+	scroll_copy(body,Rect2(36,135,528,610))
+	button("Set collection • %d marks" % profile.marks,Rect2(36,790,528,60),collection_dialog,dialog)
 	button("Back",Rect2(36,880,528,60),render,dialog)
+func upgrade_dialog() -> void:
+	var info=Gear.upgrade_info(profile,selected)
+	if not info.ok:message=info.message;render();return
+	if info.risk<=0:
+		message=Gear.upgrade(profile,selected);change("gear_upgrade",{"tier":info.level,"cost":info.cost,"destroyed":false});return
+	var id=selected
+	panel("PUSH THIS ITEM FURTHER?")
+	label(Gear.name_of(selected_item())+"\n\nUpgrade to +%d: +1 %s\nCost: %d scrap\n\n%d%%: succeeds\n%d%%: DESTROYS item and ALL inserted Sigils.\n\nThe scrap is spent on either outcome. Caps can limit the benefit. Remove valuable Sigils first if you want to protect them." % [info.level,Gear.stat_name(info.trait),info.cost,100-int(info.risk*100),int(info.risk*100)]+("\n\n"+Gear.EFFECT_HELP[info.trait] if Gear.EFFECT_HELP.has(info.trait) else ""),Rect2(36,150,528,550),23,Color("edcfb6"),dialog)
+	confirmation_active=true
+	button("ACCEPT RISK • UPGRADE +%d" % info.level,Rect2(36,785,528,62),func():
+		if not confirmation_active:return
+		confirmation_active=false
+		var rng=RandomNumberGenerator.new();rng.randomize()
+		message=Gear.upgrade(profile,id,rng,true,info.level)
+		changed.emit("gear_upgrade",{"tier":info.level,"cost":info.cost,"risk":info.risk,"destroyed":Gear.find(profile,id).is_empty()})
+		render(),dialog)
+	button("Cancel",Rect2(36,875,528,60),render,dialog)
 func socket_dialog() -> void:
 	var item=selected_item()
-	if item.is_empty(): message="Select an item first."; render(); return
-	panel("SOCKETS & RUNEWORDS")
-	label(Gear.name_of(item)+"\nOnly normal bases form runewords. Exact socket count, order and base type matter.",Rect2(36,125,528,100),21,Color("e4e9d9"),dialog)
+	if item.is_empty():message="Select an item first.";render();return
+	panel("SOCKETS & SIGILS")
+	label(Gear.name_of(item)+"\nBindings require a Normal base, exact socket count and correct Sigil order.",Rect2(36,125,528,90),19,Color("e4e9d9"),dialog)
+	socket_index=clampi(socket_index,0,maxi(0,item.sockets.size()-1))
 	for n in item.sockets.size():
 		var index=n
-		button("%d: %s%s" % [n+1,"Empty" if item.sockets[n].is_empty() else item.sockets[n]," <" if n==socket_index else ""],Rect2(36+n*180,245,168,58),func(): socket_index=index; socket_dialog(),dialog)
-	label("Select a socket, then a rune. Removal returns it safely.",Rect2(36,320,528,55),19,Color("b4d5b7"),dialog)
-	var n=0
-	for rune in Gear.RUNES:
-		var name: String=rune
-		button(name+" x%d" % profile.runes[name],Rect2(36+(n%3)*180,390+(n/3)*66,168,58),func(): message=Gear.insert_rune(profile,selected,socket_index,name); changed.emit("rune_insert",{"rune":name}); socket_dialog(),dialog)
-		n+=1
-	button("Remove selected rune",Rect2(36,535,528,55),func(): message=Gear.remove_rune(profile,selected,socket_index); changed.emit("rune_remove",{}); socket_dialog(),dialog)
-	label("Briarsteel: Ash → Gale (blade/staff, 2)\nTrailguard: Root → Stone (shield/coat, 2)\nCinderwake: Ember → Ash → Gale (blade/staff, 3)\nWaking Grove: Root → Echo → Stone (coat/relic, 3)\n\n"+message,Rect2(36,620,528,220),20,Color("dfd6b7"),dialog)
+		button("%d: %s%s" % [n+1,"Empty" if item.sockets[n].is_empty() else item.sockets[n]," <" if n==socket_index else ""],Rect2(36+n*180,230,168,58),func():socket_index=index;socket_dialog(),dialog)
+	var scroll=ScrollContainer.new();scroll.position=Vector2(36,310);scroll.size=Vector2(528,310);dialog.add_child(scroll)
+	var choices=GridContainer.new();choices.columns=2;choices.add_theme_constant_override("h_separation",12);choices.add_theme_constant_override("v_separation",8);scroll.add_child(choices)
+	for sigil in Gear.SIGILS:
+		var name: String=sigil
+		var badge="" if name in Gear.COMMON_SIGILS else (" [Boss]" if name=="Heartroot" else " [Hunt]")
+		var choice=button(name+badge+" ×%d\n" % profile.runes[name]+Gear.describe_stats(Gear.SIGILS[name]),Rect2(0,0,246,74),func():message=Gear.insert_rune(profile,selected,socket_index,name);changed.emit("sigil_insert",{"sigil":name});socket_dialog(),choices)
+		choice.custom_minimum_size=Vector2(246,74);choice.add_theme_font_size_override("font_size",17)
+		choice.disabled=profile.runes[name]<=0 or item.sockets.is_empty()
+	label("Select socket, then Sigil. Scroll for enemy Sigils.\n"+message,Rect2(36,636,528,65),17,Color("b4d5b7"),dialog)
+	button("Remove selected Sigil",Rect2(36,712,528,55),func():message=Gear.remove_rune(profile,selected,socket_index);changed.emit("sigil_remove",{});socket_dialog(),dialog)
+	button("Binding recipes & effects",Rect2(36,785,528,60),binding_dialog,dialog)
 	button("Back to pack",Rect2(36,880,528,60),render,dialog)
+func binding_dialog() -> void:
+	panel("BINDING RECIPE BOOK")
+	var body="Normal bases only. Exact number of sockets; exact order. Wrong combinations retain individual Sigil bonuses.\n\n"+Gear.binding_book()+"\n\nCONDITIONAL EFFECTS\n"
+	for stat in Gear.EFFECT_HELP:body+="\n"+Gear.stat_name(stat)+": "+Gear.EFFECT_HELP[stat]
+	scroll_copy(body,Rect2(36,140,528,680),18)
+	button("Back to Sigils",Rect2(36,880,528,60),socket_dialog,dialog)
+func collection_dialog() -> void:
+	panel("CHOOSE A SET PIECE")
+	label("%d Warden marks • Each chosen piece costs %d.\nOne mark per boss victory. Distinct set parts activate bonuses.\n" % [profile.marks,Gear.SET_MARK_COST]+("Return home to redeem marks." if camp else "Choose a base below to claim its set version."),Rect2(36,145,528,150),21,Color("e4e9d9"),dialog)
+	var n=0
+	for base in Gear.BASES:
+		var name: String=base
+		var group="Warden" if base in ["shield","coat","charm"] else "Wayfarer"
+		var claim=button(group+" "+Gear.BASES[base].name+" • 6 marks",Rect2(36,325+n*77,528,64),func():message=Gear.redeem_set(profile,name);changed.emit("set_redeem",{"base":name});collection_dialog(),dialog)
+		claim.disabled=camp or profile.marks<Gear.SET_MARK_COST;n+=1
+	label(message,Rect2(36,800,528,65),17,Color("b4d5b7"),dialog)
+	button("Back",Rect2(36,880,528,60),render,dialog)
 func corruption_dialog() -> void:
 	var item=selected_item()
 	if item.is_empty(): message="Select an item first."; render(); return
 	panel("CORRUPTION — ONE ATTEMPT")
-	label(Gear.name_of(item)+"\n\nCosts 1 corruption shard.\n\n90%: add +2 to one randomly chosen trait.\n10%: destroy this item and ALL socketed runes.\n\nSuccess seals the upgrade tier and socket count. You may still insert or remove runes. Trait caps may limit the immediate benefit to your current build.\n\nThis choice is irreversible during normal play.",Rect2(36,145,528,600),24,Color("edcfb6"),dialog)
+	label(Gear.name_of(item)+"\n\nCosts 1 corruption shard.\n\n90%: add +2 to one randomly chosen trait.\n10%: destroy this item and ALL socketed Sigils.\n\nSuccess seals the upgrade tier and socket count. You may still insert or remove Sigils. Trait caps may limit the immediate benefit to your current build.\n\nThis choice is irreversible during normal play.",Rect2(36,145,528,600),24,Color("edcfb6"),dialog)
 	button("USE SHARD — ACCEPT RISK",Rect2(36,786,528,62),func():
 		var rng=RandomNumberGenerator.new(); rng.randomize()
 		var result=Gear.corrupt(profile,selected,rng)
@@ -161,7 +208,7 @@ func salvage_dialog() -> void:
 	var item=selected_item()
 	if item.is_empty(): message="Select an item first."; render(); return
 	panel("SALVAGE ITEM")
-	label("Permanently dismantle "+Gear.name_of(item)+"?\n\nGain %d scrap. All socketed runes return to your rune pouch." % (3+int(item.tier)*2),Rect2(36,160,528,320),24,Color("e4e9d9"),dialog)
+	label("Permanently dismantle "+Gear.name_of(item)+"?\n\nGain %d scrap. All socketed Sigils return to your Sigil pouch." % (3+int(item.tier)*2),Rect2(36,160,528,320),24,Color("e4e9d9"),dialog)
 	button("Salvage",Rect2(36,745,528,60),func(): message=Gear.salvage(profile,selected); selected=""; change("gear_salvage"),dialog)
 	button("Cancel",Rect2(36,835,528,60),render,dialog)
 

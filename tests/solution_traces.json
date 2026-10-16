@@ -1257,12 +1257,20 @@
 			"vitality"
 		],
 		"gear": {
+			"bloom": 0,
 			"bulwark": 0,
+			"counter": 0,
+			"cover_power": 0,
 			"edge": 1,
 			"focus": 0,
+			"hexstep": 0,
 			"leech": 0,
-			"vitality": 2,
-			"ward": 0
+			"pierce": 0,
+			"stride": 0,
+			"temper": 0,
+			"vitality": 0,
+			"ward": 1,
+			"wound": 0
 		},
 		"profile": "starter",
 		"seed": 14026,
@@ -1339,20 +1347,32 @@
 					15,
 					14,
 					13,
-					7,
-					1,
-					0
-				],
-				[
-					6,
 					12,
 					18,
 					24,
+					25
+				],
+				[
+					19,
+					13,
+					7,
+					1,
+					0,
+					6
+				],
+				[
+					12,
+					18,
+					24,
+					30
+				],
+				[
 					30,
 					31,
-					25,
-					26,
-					27
+					32,
+					33,
+					27,
+					26
 				]
 			],
 			[
@@ -1419,12 +1439,20 @@
 			"edge"
 		],
 		"gear": {
+			"bloom": 0,
 			"bulwark": 0,
+			"counter": 0,
+			"cover_power": 0,
 			"edge": 1,
 			"focus": 0,
+			"hexstep": 0,
 			"leech": 0,
-			"vitality": 2,
-			"ward": 0
+			"pierce": 0,
+			"stride": 0,
+			"temper": 0,
+			"vitality": 0,
+			"ward": 1,
+			"wound": 0
 		},
 		"profile": "starter",
 		"seed": 14027,
@@ -1568,12 +1596,20 @@
 			"leech"
 		],
 		"gear": {
+			"bloom": 0,
 			"bulwark": 0,
+			"counter": 0,
+			"cover_power": 0,
 			"edge": 1,
 			"focus": 0,
+			"hexstep": 0,
 			"leech": 0,
-			"vitality": 2,
-			"ward": 0
+			"pierce": 0,
+			"stride": 0,
+			"temper": 0,
+			"vitality": 0,
+			"ward": 1,
+			"wound": 0
 		},
 		"profile": "starter",
 		"seed": 102,
@@ -1739,12 +1775,20 @@
 			"vitality"
 		],
 		"gear": {
+			"bloom": 0,
 			"bulwark": 0,
+			"counter": 0,
+			"cover_power": 0,
 			"edge": 1,
 			"focus": 0,
+			"hexstep": 0,
 			"leech": 0,
-			"vitality": 2,
-			"ward": 0
+			"pierce": 0,
+			"stride": 0,
+			"temper": 0,
+			"vitality": 0,
+			"ward": 1,
+			"wound": 0
 		},
 		"profile": "starter",
 		"seed": 14026,
@@ -1912,12 +1956,20 @@
 			"edge"
 		],
 		"gear": {
+			"bloom": 0,
 			"bulwark": 0,
+			"counter": 0,
+			"cover_power": 0,
 			"edge": 1,
 			"focus": 0,
+			"hexstep": 0,
 			"leech": 0,
-			"vitality": 2,
-			"ward": 0
+			"pierce": 0,
+			"stride": 0,
+			"temper": 0,
+			"vitality": 0,
+			"ward": 1,
+			"wound": 0
 		},
 		"profile": "starter",
 		"seed": 14027,
@@ -1936,17 +1988,17 @@
 			],
 			[
 				[
-					1,
-					2,
-					3,
-					7,
-					6,
-					5,
 					4,
 					8,
-					9
+					9,
+					5,
+					1,
+					2,
+					6,
+					7
 				],
 				[
+					6,
 					10,
 					11
 				]
@@ -2053,12 +2105,20 @@
 			"leech"
 		],
 		"gear": {
+			"bloom": 0,
 			"bulwark": 0,
+			"counter": 0,
+			"cover_power": 0,
 			"edge": 1,
 			"focus": 0,
+			"hexstep": 0,
 			"leech": 0,
-			"vitality": 2,
-			"ward": 0
+			"pierce": 0,
+			"stride": 0,
+			"temper": 0,
+			"vitality": 0,
+			"ward": 1,
+			"wound": 0
 		},
 		"profile": "starter",
 		"seed": 102,
@@ -2136,32 +2196,36 @@
 					34
 				],
 				[
-					35,
-					29,
-					28
-				],
-				[
-					27,
-					26,
+					33,
 					32
 				],
 				[
 					32,
-					33,
+					26,
 					27
 				],
 				[
 					28,
-					22
+					29,
+					35
 				],
 				[
+					34,
+					28
+				],
+				[
+					22,
 					16,
-					10,
-					9,
-					3,
-					2
+					10
 				],
 				[
+					9,
+					8,
+					2,
+					3
+				],
+				[
+					2,
 					1,
 					0
 				]

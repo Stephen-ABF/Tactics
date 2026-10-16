@@ -1,6 +1,6 @@
 # Thornwake — provisional art handoff
 
-Names and lore below are a working direction for the artist, pending your approval as canon. The world has been overtaken by an unnatural thorn awakening. A lone Wayfarer carries relics through forest, ash, frozen wetlands and abandoned sanctuaries to confront the corrupted Heartroot Warden. Warden equipment protects and sustains; Wayfarer equipment favors movement and chained attacks. Ash, Root, Gale, Stone, Ember and Echo are the rune vocabulary. Corruption should look powerful, beautiful and dangerous rather than demonic gore.
+Names and lore below are a working direction for the artist, pending your approval as canon. The world has been overtaken by an unnatural thorn awakening. A lone Wayfarer carries relics through forest, ash, frozen wetlands and abandoned sanctuaries to confront the corrupted Heartroot Warden. Warden equipment protects and sustains; Wayfarer equipment favors movement and chained attacks. Ash, Root, Gale, Stone, Ember and Echo are the Sigil vocabulary. Corruption should look powerful, beautiful and dangerous rather than demonic gore.
 
 ## Visual direction
 
@@ -35,7 +35,7 @@ Actor filenames use the **exact case-sensitive IDs** below in `art_overrides/act
 
 Floor textures: `art_overrides/floors/{zone_id}.png`, suggested 512×512 seamless, subdued contrast, no baked grid/telegraphs. Each board tile receives the texture. Zone scenery: `art_overrides/zones/{zone_id}.tscn`, centered origin, Y up; keep action cells unobstructed. Scene is scenery only, not collision or gameplay. Test every board size before shipping. Restart the game after importing replacements.
 
-UI icons, hero portraits, rune icons and animated sprite sheets are not currently auto-import slots; those need a separate integration pass. Do not put text into generated art. Keep the current danger arrows/crosses and tile selection as code-rendered overlays.
+UI icons, hero portraits, Sigil icons and animated sprite sheets are not currently auto-import slots; those need a separate integration pass. Do not put text into generated art. Keep the current danger arrows/crosses and tile selection as code-rendered overlays.
 
 ## Animation brief
 
