@@ -2,6 +2,8 @@
 
 A complete offline puzzle-action prototype for **Godot 4.7.2 stable**, standard GDScript edition, Compatibility renderer. Android portrait is the initial target. The board is 3D with procedural character animation and replaceable placeholder art.
 
+![Actual Godot render of the 6×6 Briarwood board](docs/images/board.png)
+
 ## Play
 
 Open `project.godot` in Godot 4.7.2 and press F5. Try **Practice** first, then pack gear and begin an expedition. No addons, accounts or network connection are needed to play.

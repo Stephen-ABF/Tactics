@@ -9,6 +9,7 @@ Tested with Godot4.7.2 stable (`ed1daf0bf`), Linux, Compatibility renderer. Test
 | UI/save/flow |111 assertions,0 failures |
 | Expedition integration |2 complete winning expeditions through touch-selection methods, animated commit, all camps/sizes, boss and results |
 | Greedy balance probe |18/18 Depth1 wins; baseline18–44 turns, starter14–23, strong11–19 |
+| CI export (first run) |Windows debug EXE and PCK produced; Android caught missing ETC2 import setting, now corrected and being rerun |
 | Render review |Actual600×1000 Godot screenshots: title, all five waves, camp, settings, codex |
 
 6,483 counted assertions include repeated generation checks, not independent user studies. Complete expedition tests fast-forward the animation clock; rendered review separately uses software OpenGL. No real Android input/performance or human playtesting has occurred.
