@@ -30,7 +30,7 @@ A win unlocks the next of five Depths. Higher Depths raise enemy health and even
 
 Implemented: title/tutorial/game/camp/results/retry loop; persistent gear and active-run saves; backup recovery; pause/restart; sound and reduced-motion settings; low/balanced render modes; safe-area layout; local diagnostic events; automated tests; Windows and Android export presets; CI export workflow; art replacement slots and handoff.
 
-This is a **tested development candidate**, not a published store release. Actual local verification is recorded in [TEST_REPORT.md](TEST_REPORT.md). GitHub Actions attempts debug Windows and Android exports; only a successful job/artifact establishes that those builds were produced. No physical Android device testing or measured mobile performance has occurred. Debug signing is disposable and unsuitable for store release.
+This is a **tested development candidate**, not a published store release. Actual local verification is recorded in [TEST_REPORT.md](TEST_REPORT.md). GitHub Actions has successfully exported debug Windows EXE/PCK and Android APK builds. Artifacts are available from the successful build run. No physical Android device testing or measured mobile performance has occurred. Debug signing is disposable and unsuitable for store release.
 
 ## Tune and extend
 

@@ -90,6 +90,11 @@ func run() -> void:
 	game.state=R.new_board(14,4,"Reaver",14,{})
 	game.finish_run(true,"test")
 	check(game.prefs.unlocked_depth==2 and game.screen=="results","Victory unlocks next depth")
+	game.start_run(false,14)
+	check(game.encounter==0 and game.boons.is_empty() and game.route.is_empty() and not game.busy and game.state.turn==0,"Replay clears old route, boons and animation state")
+	game.state.status="won";game.state.kills=3;game.total_kills=3;game.prefs.best=0
+	game.finish_run(false,"abandon")
+	check(game.prefs.best==3,"Abandoning a cleared camp does not count its kills twice")
 	var good=game.prefs.duplicate(true)
 	S.write_save(good);S.write_save(good)
 	var bad=FileAccess.open(S.PATH,FileAccess.WRITE);bad.store_string("{broken");bad.close()

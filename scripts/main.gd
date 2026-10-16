@@ -279,7 +279,7 @@ func finish_run(won: bool,reason: String="health") -> void:
 	if not training:
 		Gear.bank_field(prefs.gear);prefs.runs+=1
 		if won:prefs.wins+=1;prefs.unlocked_depth=mini(5,maxi(prefs.unlocked_depth,depth+1))
-		prefs.materials+=bank;prefs.best=maxi(prefs.best,total_kills+(int(state.kills) if not won else 0));prefs.run={};persist()
+		prefs.materials+=bank;prefs.best=maxi(prefs.best,total_kills+(int(state.kills) if state.status!="won" else 0));prefs.run={};persist()
 	Save.log_event("run_end",{"id":run_id,"won":won,"reason":reason,"seconds":active_seconds,"wave":encounter,"loot":run_loot,"depth":depth})
 	last_finished=Time.get_ticks_msec();clear_screen();screen="results"
 	text("THE HEARTROOT FALLS" if won else "ROOTS HOLD FAST",36,110,528,80,34)
