@@ -1,0 +1,70 @@
+name: Test and export prototype
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: thornwake-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test-and-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      GODOT_VERSION: 4.7.2
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Install matching Godot editor and export templates
+        shell: bash
+        run: |
+          set -euo pipefail
+          download_root="https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable"
+          curl --fail --location --retry 3 "$download_root/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -o "$RUNNER_TEMP/godot.zip"
+          unzip -q "$RUNNER_TEMP/godot.zip" -d "$RUNNER_TEMP/godot"
+          chmod +x "$RUNNER_TEMP/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+          echo "GODOT_BIN=$RUNNER_TEMP/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" >> "$GITHUB_ENV"
+          curl --fail --location --retry 3 "$download_root/Godot_v${GODOT_VERSION}-stable_export_templates.tpz" -o "$RUNNER_TEMP/templates.tpz"
+          mkdir -p "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          unzip -q "$RUNNER_TEMP/templates.tpz" 'templates/android_debug.apk' 'templates/android_release.apk' 'templates/windows_debug_x86_64.exe' 'templates/windows_release_x86_64.exe' -d "$RUNNER_TEMP/templates"
+          cp "$RUNNER_TEMP/templates/templates/"* "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable/"
+      - name: Verify rules, saves, inventory and full expeditions
+        run: python3 tools/run_checks.py --godot "$GODOT_BIN"
+      - name: Export Windows debug build and resource pack
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p builds
+          "$GODOT_BIN" --headless --path . --export-debug 'Windows Desktop' builds/Thornwake.exe
+          "$GODOT_BIN" --headless --path . --export-pack 'Windows Desktop' builds/Thornwake-v0.4.0.pck
+      - name: Configure existing Android SDK and debug signing
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -d "$ANDROID_HOME/platform-tools"
+          test -d "$ANDROID_HOME/build-tools"
+          java_path="${JAVA_HOME_17_X64:-$JAVA_HOME}"
+          "$java_path/bin/keytool" -genkeypair -noprompt -keystore "$RUNNER_TEMP/thornwake-debug.keystore" -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname 'CN=Android Debug,O=Thornwake,C=US'
+          mkdir -p "$HOME/.config/godot"
+          cat > "$HOME/.config/godot/editor_settings-4.7.tres" <<SETTINGS
+          [gd_resource type="EditorSettings" format=3]
+          [resource]
+          export/android/java_sdk_path = "$java_path"
+          export/android/android_sdk_path = "$ANDROID_HOME"
+          export/android/debug_keystore = "$RUNNER_TEMP/thornwake-debug.keystore"
+          export/android/debug_keystore_user = "androiddebugkey"
+          export/android/debug_keystore_pass = "android"
+          SETTINGS
+      - name: Export Android debug APK
+        run: '"$GODOT_BIN" --headless --path . --export-debug Android builds/Thornwake-debug.apk'
+      - uses: actions/upload-artifact@v7.0.2
+        if: always()
+        with:
+          name: Thornwake-v0.4.0-test-builds
+          path: |
+            builds/
+            tests/balance_results.json
+          if-no-files-found: warn
+          retention-days: 14

@@ -1,0 +1,11 @@
+.godot/
+builds/
+preview/
+*.tmp
+*.log
+*.apk
+*.aab
+*.exe
+*.pck
+*.zip
+.DS_Store
