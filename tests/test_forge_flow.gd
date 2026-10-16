@@ -38,6 +38,14 @@ func run() -> void:
 	var upgraded=G.find(game.prefs.gear,gear.id)
 	check(upgraded.is_empty() or upgraded.tier==4,"UI commits one success or destruction, never another upgrade")
 	check(S.read_save().gear.scrap==976,"Forge outcome persists immediately")
+	var crowded=game.prefs.gear.items[1]
+	crowded.stats={}
+	for stat in G.STATS:crowded.stats[stat]=3
+	crowded.tier=6;crowded.corruption={"temper":2};crowded.sockets=["Carapace","Heartroot"]
+	pack.selected=crowded.id;pack.render();await process_frame;await process_frame
+	var details=pack.get_node("ItemDetails")
+	check(details.position.y+details.size.y<780,"Long high-tier item details cannot overlap forge controls")
+	check(details.get_v_scroll_bar().max_value>details.size.y,"All modifiers remain accessible by scrolling")
 	pack.collection_dialog()
 	var claim: Button
 	for child in pack.dialog.get_children():

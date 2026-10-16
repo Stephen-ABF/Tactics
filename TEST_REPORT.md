@@ -1,6 +1,6 @@
 # Thornwake v0.5.0 — Sigils & risk verification
 
-Godot 4.7.2 stable (`ed1daf0bf`), Linux, Compatibility renderer. Local suites pass in isolated player-data directories. Test count: **18,664 assertions**, including repeated seeded sampling rather than independent human test cases.
+Godot 4.7.2 stable (`ed1daf0bf`), Linux, Compatibility renderer. Local suites pass in isolated player-data directories. Test count: **18,666 assertions**, including repeated seeded sampling rather than independent human test cases.
 
 | Suite | Observed result |
 | --- | --- |
@@ -8,7 +8,7 @@ Godot 4.7.2 stable (`ed1daf0bf`), Linux, Compatibility renderer. Local suites pa
 | Gear regression |35 assertions; zero failures;97 destructions in1,000 corruption samples |
 | Main flow/save |113 assertions; zero failures |
 | New economy/effects |12,158 assertions; zero failures |
-| Forge/hunt integration |21 assertions; zero failures |
+| Forge/hunt integration |23 assertions; zero failures |
 | Expedition integration |Two complete winning five-wave expeditions through selected routes, animations, camps, boss and results |
 | Balance probe |18/18 simulated Depth1 wins; baseline18–44 turns, new starter14–23, strong11–19 |
 | Render inspection |Actual600×1000 Godot renders: scout report, hunting guide, pack, risk quote, Sigil sockets, Binding book, Set collection |

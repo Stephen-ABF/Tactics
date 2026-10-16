@@ -63,7 +63,11 @@ func render() -> void:
 	grid.cell_clicked.connect(cell_click)
 	add_child(grid)
 	label("Scrap %d • Shards %d • Marks %d" % [profile.scrap,profile.shards,profile.marks],Rect2(36,500,528,28),19)
-	label(Gear.describe_stats(Gear.bonuses(profile))+" (caps apply)",Rect2(36,531,528,48),16,Color("b4d5b7"))
+	var total=Gear.bonuses(profile)
+	var specials=0
+	for stat in Gear.STATS:
+		if stat not in Gear.BASIC_STATS and int(total.get(stat,0))>0:specials+=1
+	label("Edge %d • HP +%d • Ward %d • Focus %d\nLeech %d • Bulwark %d • %d special traits • caps apply" % [total.edge,total.vitality,total.ward,total.focus,total.leech,total.bulwark,specials],Rect2(36,531,528,40),16,Color("b4d5b7"))
 	var available=[]
 	for item in profile.items:
 		if item.location=="bag": continue
@@ -71,25 +75,27 @@ func render() -> void:
 		available.append(item)
 	var max_page=maxi(0,(available.size()-1)/3)
 	page=clampi(page,0,max_page)
-	button("<",Rect2(36,590,42,62),func(): page=maxi(0,page-1); render())
+	button("<",Rect2(36,604,42,62),func(): page=maxi(0,page-1); render())
 	for n in 3:
 		var index=page*3+n
 		if index>=available.size(): break
 		var item: Dictionary=available[index]
 		var id: String=item.id
-		var b=button(Gear.name_of(item),Rect2(84+n*146,590,140,62),func(): selected=id; placing=false; render())
+		var b=button(Gear.name_of(item),Rect2(84+n*146,604,140,62),func(): selected=id; placing=false; render())
 		b.add_theme_color_override("font_color",Color(Gear.COLORS[Gear.quality(item)]))
-	button(">",Rect2(522,590,42,62),func(): page=mini(max_page,page+1); render())
-	label(("FIELD FINDS" if camp else "STASH")+"  %d items • page %d/%d" % [available.size(),page+1,max_page+1],Rect2(36,561,528,25),16)
+	button(">",Rect2(522,604,42,62),func(): page=mini(max_page,page+1); render())
+	label(("FIELD FINDS" if camp else "STASH")+"  %d items • page %d/%d" % [available.size(),page+1,max_page+1],Rect2(36,574,528,25),16)
 	var item=selected_item()
 	if not item.is_empty():
 		var details=Gear.name_of(item)+"  ["+Gear.quality(item).to_upper()+"]\n"+Gear.describe_stats(Gear.item_stats(item))+"\nSockets: "+socket_summary(item)+("\nCORRUPTED: upgrades/socket count sealed" if not item.corruption.is_empty() else "")
-		label(details,Rect2(36,669,422,103),16,Color(Gear.COLORS[Gear.quality(item)]))
+		var detail_scroll=ScrollContainer.new();detail_scroll.name="ItemDetails";detail_scroll.position=Vector2(36,681);detail_scroll.size=Vector2(422,88);add_child(detail_scroll)
+		var detail_copy=Label.new();detail_copy.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;detail_copy.custom_minimum_size=Vector2(398,0)
+		detail_copy.add_theme_font_size_override("font_size",16);detail_copy.add_theme_color_override("font_color",Color(Gear.COLORS[Gear.quality(item)]));detail_copy.text=details;detail_scroll.add_child(detail_copy)
 		var shape=ShapePreview.new()
-		shape.item=item; shape.position=Vector2(474,677); shape.size=Vector2(90,90)
+		shape.item=item; shape.position=Vector2(474,685); shape.size=Vector2(90,90)
 		shape.mouse_filter=Control.MOUSE_FILTER_IGNORE
 		add_child(shape)
-	else: label("Select a packed item or a stash find. Every packed item contributes; there are no worn equipment slots.",Rect2(36,669,528,90),19)
+	else: label("Select a packed item or a stash find. Every packed item contributes; there are no worn equipment slots.",Rect2(36,681,528,88),19)
 	button("Place / Move",Rect2(36,780,168,50),func(): placing=true; message="Tap the top-left cell for the selected shape."; render())
 	button("To stash" if not camp else "To field",Rect2(216,780,168,50),unpack)
 	button("Rotate 90",Rect2(396,780,168,50),func(): message=Gear.rotate(profile,selected); change("gear_rotate"))
