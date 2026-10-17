@@ -1,0 +1,1812 @@
+{
+	"groups": {
+		"baseline_depth1": {
+			"damage": [
+				15,
+				3,
+				9,
+				9,
+				5,
+				19,
+				6,
+				3,
+				7,
+				8,
+				5,
+				20
+			],
+			"runs": 12,
+			"turns": [
+				49,
+				21,
+				33,
+				27,
+				41,
+				43,
+				36,
+				22,
+				30,
+				27,
+				37,
+				42
+			],
+			"wins": 12
+		},
+		"baseline_depth2": {
+			"damage": [
+				15,
+				5,
+				27,
+				22,
+				26,
+				25,
+				15,
+				9,
+				29,
+				27,
+				18,
+				26
+			],
+			"runs": 12,
+			"turns": [
+				23,
+				42,
+				22,
+				44
+			],
+			"wins": 4
+		},
+		"baseline_depth3": {
+			"damage": [
+				13,
+				15,
+				11,
+				15,
+				14,
+				13,
+				13,
+				15,
+				11,
+				15,
+				14,
+				13
+			],
+			"runs": 12,
+			"turns": [],
+			"wins": 0
+		},
+		"binding_depth1": {
+			"damage": [
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0
+			],
+			"runs": 12,
+			"turns": [
+				10,
+				15,
+				16,
+				16,
+				21,
+				15,
+				10,
+				15,
+				16,
+				15,
+				19,
+				15
+			],
+			"wins": 12
+		},
+		"binding_depth2": {
+			"damage": [
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0
+			],
+			"runs": 12,
+			"turns": [
+				14,
+				15,
+				14,
+				18,
+				19,
+				14,
+				13,
+				15,
+				14,
+				18,
+				19,
+				14
+			],
+			"wins": 12
+		},
+		"binding_depth3": {
+			"damage": [
+				4,
+				0,
+				0,
+				0,
+				2,
+				0,
+				4,
+				1,
+				0,
+				0,
+				2,
+				0
+			],
+			"runs": 12,
+			"turns": [
+				21,
+				15,
+				14,
+				16,
+				20,
+				19,
+				18,
+				16,
+				13,
+				17,
+				20,
+				16
+			],
+			"wins": 12
+		},
+		"risk6_depth1": {
+			"damage": [
+				0,
+				0,
+				1,
+				0,
+				0,
+				0,
+				0,
+				0,
+				1,
+				0,
+				2,
+				0
+			],
+			"runs": 12,
+			"turns": [
+				10,
+				15,
+				16,
+				16,
+				19,
+				14,
+				10,
+				15,
+				16,
+				15,
+				18,
+				14
+			],
+			"wins": 12
+		},
+		"risk6_depth2": {
+			"damage": [
+				0,
+				0,
+				0,
+				1,
+				0,
+				1,
+				0,
+				1,
+				2,
+				1,
+				1,
+				1
+			],
+			"runs": 12,
+			"turns": [
+				13,
+				16,
+				16,
+				17,
+				14,
+				13,
+				12,
+				15,
+				14,
+				17,
+				18,
+				13
+			],
+			"wins": 12
+		},
+		"risk6_depth3": {
+			"damage": [
+				3,
+				0,
+				0,
+				0,
+				1,
+				1,
+				5,
+				2,
+				0,
+				3,
+				1,
+				1
+			],
+			"runs": 12,
+			"turns": [
+				22,
+				15,
+				14,
+				13,
+				19,
+				18,
+				21,
+				14,
+				14,
+				17,
+				19,
+				20
+			],
+			"wins": 12
+		},
+		"safe3_depth1": {
+			"damage": [
+				1,
+				0,
+				0,
+				0,
+				0,
+				0,
+				1,
+				0,
+				0,
+				0,
+				0,
+				0
+			],
+			"runs": 12,
+			"turns": [
+				12,
+				16,
+				16,
+				16,
+				21,
+				16,
+				12,
+				16,
+				16,
+				15,
+				20,
+				16
+			],
+			"wins": 12
+		},
+		"safe3_depth2": {
+			"damage": [
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0
+			],
+			"runs": 12,
+			"turns": [
+				18,
+				16,
+				14,
+				19,
+				20,
+				16,
+				17,
+				16,
+				14,
+				19,
+				20,
+				18
+			],
+			"wins": 12
+		},
+		"safe3_depth3": {
+			"damage": [
+				3,
+				0,
+				0,
+				0,
+				1,
+				0,
+				3,
+				4,
+				0,
+				0,
+				1,
+				0
+			],
+			"runs": 12,
+			"turns": [
+				25,
+				18,
+				16,
+				17,
+				24,
+				22,
+				25,
+				18,
+				15,
+				18,
+				24,
+				19
+			],
+			"wins": 12
+		}
+	},
+	"policy": "unique camp boons; expedition Edge cap 3",
+	"runs": [
+		{
+			"damage": 15,
+			"depth": 1,
+			"profile": "baseline",
+			"seed": 14026,
+			"stance": "Duelist",
+			"turns": 49,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 3,
+			"depth": 1,
+			"profile": "baseline",
+			"seed": 14027,
+			"stance": "Duelist",
+			"turns": 21,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 9,
+			"depth": 1,
+			"profile": "baseline",
+			"seed": 102,
+			"stance": "Duelist",
+			"turns": 33,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 9,
+			"depth": 1,
+			"profile": "baseline",
+			"seed": 77,
+			"stance": "Duelist",
+			"turns": 27,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 5,
+			"depth": 1,
+			"profile": "baseline",
+			"seed": 301,
+			"stance": "Duelist",
+			"turns": 41,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 19,
+			"depth": 1,
+			"profile": "baseline",
+			"seed": 999,
+			"stance": "Duelist",
+			"turns": 43,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 6,
+			"depth": 1,
+			"profile": "baseline",
+			"seed": 14026,
+			"stance": "Reaver",
+			"turns": 36,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 3,
+			"depth": 1,
+			"profile": "baseline",
+			"seed": 14027,
+			"stance": "Reaver",
+			"turns": 22,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 7,
+			"depth": 1,
+			"profile": "baseline",
+			"seed": 102,
+			"stance": "Reaver",
+			"turns": 30,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 8,
+			"depth": 1,
+			"profile": "baseline",
+			"seed": 77,
+			"stance": "Reaver",
+			"turns": 27,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 5,
+			"depth": 1,
+			"profile": "baseline",
+			"seed": 301,
+			"stance": "Reaver",
+			"turns": 37,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 20,
+			"depth": 1,
+			"profile": "baseline",
+			"seed": 999,
+			"stance": "Reaver",
+			"turns": 42,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 15,
+			"depth": 2,
+			"profile": "baseline",
+			"seed": 14026,
+			"stance": "Duelist",
+			"turns": 85,
+			"waves": 1,
+			"won": false
+		},
+		{
+			"damage": 5,
+			"depth": 2,
+			"profile": "baseline",
+			"seed": 14027,
+			"stance": "Duelist",
+			"turns": 23,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 27,
+			"depth": 2,
+			"profile": "baseline",
+			"seed": 102,
+			"stance": "Duelist",
+			"turns": 23,
+			"waves": 2,
+			"won": false
+		},
+		{
+			"damage": 22,
+			"depth": 2,
+			"profile": "baseline",
+			"seed": 77,
+			"stance": "Duelist",
+			"turns": 42,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 26,
+			"depth": 2,
+			"profile": "baseline",
+			"seed": 301,
+			"stance": "Duelist",
+			"turns": 19,
+			"waves": 2,
+			"won": false
+		},
+		{
+			"damage": 25,
+			"depth": 2,
+			"profile": "baseline",
+			"seed": 999,
+			"stance": "Duelist",
+			"turns": 112,
+			"waves": 4,
+			"won": false
+		},
+		{
+			"damage": 15,
+			"depth": 2,
+			"profile": "baseline",
+			"seed": 14026,
+			"stance": "Reaver",
+			"turns": 85,
+			"waves": 1,
+			"won": false
+		},
+		{
+			"damage": 9,
+			"depth": 2,
+			"profile": "baseline",
+			"seed": 14027,
+			"stance": "Reaver",
+			"turns": 22,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 29,
+			"depth": 2,
+			"profile": "baseline",
+			"seed": 102,
+			"stance": "Reaver",
+			"turns": 24,
+			"waves": 2,
+			"won": false
+		},
+		{
+			"damage": 27,
+			"depth": 2,
+			"profile": "baseline",
+			"seed": 77,
+			"stance": "Reaver",
+			"turns": 44,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 18,
+			"depth": 2,
+			"profile": "baseline",
+			"seed": 301,
+			"stance": "Reaver",
+			"turns": 82,
+			"waves": 1,
+			"won": false
+		},
+		{
+			"damage": 26,
+			"depth": 2,
+			"profile": "baseline",
+			"seed": 999,
+			"stance": "Reaver",
+			"turns": 112,
+			"waves": 4,
+			"won": false
+		},
+		{
+			"damage": 13,
+			"depth": 3,
+			"profile": "baseline",
+			"seed": 14026,
+			"stance": "Duelist",
+			"turns": 75,
+			"waves": 0,
+			"won": false
+		},
+		{
+			"damage": 15,
+			"depth": 3,
+			"profile": "baseline",
+			"seed": 14027,
+			"stance": "Duelist",
+			"turns": 75,
+			"waves": 0,
+			"won": false
+		},
+		{
+			"damage": 11,
+			"depth": 3,
+			"profile": "baseline",
+			"seed": 102,
+			"stance": "Duelist",
+			"turns": 75,
+			"waves": 0,
+			"won": false
+		},
+		{
+			"damage": 15,
+			"depth": 3,
+			"profile": "baseline",
+			"seed": 77,
+			"stance": "Duelist",
+			"turns": 3,
+			"waves": 0,
+			"won": false
+		},
+		{
+			"damage": 14,
+			"depth": 3,
+			"profile": "baseline",
+			"seed": 301,
+			"stance": "Duelist",
+			"turns": 5,
+			"waves": 0,
+			"won": false
+		},
+		{
+			"damage": 13,
+			"depth": 3,
+			"profile": "baseline",
+			"seed": 999,
+			"stance": "Duelist",
+			"turns": 75,
+			"waves": 0,
+			"won": false
+		},
+		{
+			"damage": 13,
+			"depth": 3,
+			"profile": "baseline",
+			"seed": 14026,
+			"stance": "Reaver",
+			"turns": 75,
+			"waves": 0,
+			"won": false
+		},
+		{
+			"damage": 15,
+			"depth": 3,
+			"profile": "baseline",
+			"seed": 14027,
+			"stance": "Reaver",
+			"turns": 75,
+			"waves": 0,
+			"won": false
+		},
+		{
+			"damage": 11,
+			"depth": 3,
+			"profile": "baseline",
+			"seed": 102,
+			"stance": "Reaver",
+			"turns": 75,
+			"waves": 0,
+			"won": false
+		},
+		{
+			"damage": 15,
+			"depth": 3,
+			"profile": "baseline",
+			"seed": 77,
+			"stance": "Reaver",
+			"turns": 3,
+			"waves": 0,
+			"won": false
+		},
+		{
+			"damage": 14,
+			"depth": 3,
+			"profile": "baseline",
+			"seed": 301,
+			"stance": "Reaver",
+			"turns": 5,
+			"waves": 0,
+			"won": false
+		},
+		{
+			"damage": 13,
+			"depth": 3,
+			"profile": "baseline",
+			"seed": 999,
+			"stance": "Reaver",
+			"turns": 75,
+			"waves": 0,
+			"won": false
+		},
+		{
+			"damage": 1,
+			"depth": 1,
+			"profile": "safe3",
+			"seed": 14026,
+			"stance": "Duelist",
+			"turns": 12,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "safe3",
+			"seed": 14027,
+			"stance": "Duelist",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "safe3",
+			"seed": 102,
+			"stance": "Duelist",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "safe3",
+			"seed": 77,
+			"stance": "Duelist",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "safe3",
+			"seed": 301,
+			"stance": "Duelist",
+			"turns": 21,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "safe3",
+			"seed": 999,
+			"stance": "Duelist",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 1,
+			"depth": 1,
+			"profile": "safe3",
+			"seed": 14026,
+			"stance": "Reaver",
+			"turns": 12,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "safe3",
+			"seed": 14027,
+			"stance": "Reaver",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "safe3",
+			"seed": 102,
+			"stance": "Reaver",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "safe3",
+			"seed": 77,
+			"stance": "Reaver",
+			"turns": 15,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "safe3",
+			"seed": 301,
+			"stance": "Reaver",
+			"turns": 20,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "safe3",
+			"seed": 999,
+			"stance": "Reaver",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "safe3",
+			"seed": 14026,
+			"stance": "Duelist",
+			"turns": 18,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "safe3",
+			"seed": 14027,
+			"stance": "Duelist",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "safe3",
+			"seed": 102,
+			"stance": "Duelist",
+			"turns": 14,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "safe3",
+			"seed": 77,
+			"stance": "Duelist",
+			"turns": 19,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "safe3",
+			"seed": 301,
+			"stance": "Duelist",
+			"turns": 20,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "safe3",
+			"seed": 999,
+			"stance": "Duelist",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "safe3",
+			"seed": 14026,
+			"stance": "Reaver",
+			"turns": 17,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "safe3",
+			"seed": 14027,
+			"stance": "Reaver",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "safe3",
+			"seed": 102,
+			"stance": "Reaver",
+			"turns": 14,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "safe3",
+			"seed": 77,
+			"stance": "Reaver",
+			"turns": 19,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "safe3",
+			"seed": 301,
+			"stance": "Reaver",
+			"turns": 20,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "safe3",
+			"seed": 999,
+			"stance": "Reaver",
+			"turns": 18,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 3,
+			"depth": 3,
+			"profile": "safe3",
+			"seed": 14026,
+			"stance": "Duelist",
+			"turns": 25,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 3,
+			"profile": "safe3",
+			"seed": 14027,
+			"stance": "Duelist",
+			"turns": 18,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 3,
+			"profile": "safe3",
+			"seed": 102,
+			"stance": "Duelist",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 3,
+			"profile": "safe3",
+			"seed": 77,
+			"stance": "Duelist",
+			"turns": 17,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 1,
+			"depth": 3,
+			"profile": "safe3",
+			"seed": 301,
+			"stance": "Duelist",
+			"turns": 24,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 3,
+			"profile": "safe3",
+			"seed": 999,
+			"stance": "Duelist",
+			"turns": 22,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 3,
+			"depth": 3,
+			"profile": "safe3",
+			"seed": 14026,
+			"stance": "Reaver",
+			"turns": 25,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 4,
+			"depth": 3,
+			"profile": "safe3",
+			"seed": 14027,
+			"stance": "Reaver",
+			"turns": 18,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 3,
+			"profile": "safe3",
+			"seed": 102,
+			"stance": "Reaver",
+			"turns": 15,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 3,
+			"profile": "safe3",
+			"seed": 77,
+			"stance": "Reaver",
+			"turns": 18,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 1,
+			"depth": 3,
+			"profile": "safe3",
+			"seed": 301,
+			"stance": "Reaver",
+			"turns": 24,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 3,
+			"profile": "safe3",
+			"seed": 999,
+			"stance": "Reaver",
+			"turns": 19,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "risk6",
+			"seed": 14026,
+			"stance": "Duelist",
+			"turns": 10,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "risk6",
+			"seed": 14027,
+			"stance": "Duelist",
+			"turns": 15,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 1,
+			"depth": 1,
+			"profile": "risk6",
+			"seed": 102,
+			"stance": "Duelist",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "risk6",
+			"seed": 77,
+			"stance": "Duelist",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "risk6",
+			"seed": 301,
+			"stance": "Duelist",
+			"turns": 19,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "risk6",
+			"seed": 999,
+			"stance": "Duelist",
+			"turns": 14,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "risk6",
+			"seed": 14026,
+			"stance": "Reaver",
+			"turns": 10,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "risk6",
+			"seed": 14027,
+			"stance": "Reaver",
+			"turns": 15,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 1,
+			"depth": 1,
+			"profile": "risk6",
+			"seed": 102,
+			"stance": "Reaver",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "risk6",
+			"seed": 77,
+			"stance": "Reaver",
+			"turns": 15,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 2,
+			"depth": 1,
+			"profile": "risk6",
+			"seed": 301,
+			"stance": "Reaver",
+			"turns": 18,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "risk6",
+			"seed": 999,
+			"stance": "Reaver",
+			"turns": 14,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "risk6",
+			"seed": 14026,
+			"stance": "Duelist",
+			"turns": 13,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "risk6",
+			"seed": 14027,
+			"stance": "Duelist",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "risk6",
+			"seed": 102,
+			"stance": "Duelist",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 1,
+			"depth": 2,
+			"profile": "risk6",
+			"seed": 77,
+			"stance": "Duelist",
+			"turns": 17,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "risk6",
+			"seed": 301,
+			"stance": "Duelist",
+			"turns": 14,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 1,
+			"depth": 2,
+			"profile": "risk6",
+			"seed": 999,
+			"stance": "Duelist",
+			"turns": 13,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "risk6",
+			"seed": 14026,
+			"stance": "Reaver",
+			"turns": 12,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 1,
+			"depth": 2,
+			"profile": "risk6",
+			"seed": 14027,
+			"stance": "Reaver",
+			"turns": 15,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 2,
+			"depth": 2,
+			"profile": "risk6",
+			"seed": 102,
+			"stance": "Reaver",
+			"turns": 14,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 1,
+			"depth": 2,
+			"profile": "risk6",
+			"seed": 77,
+			"stance": "Reaver",
+			"turns": 17,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 1,
+			"depth": 2,
+			"profile": "risk6",
+			"seed": 301,
+			"stance": "Reaver",
+			"turns": 18,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 1,
+			"depth": 2,
+			"profile": "risk6",
+			"seed": 999,
+			"stance": "Reaver",
+			"turns": 13,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 3,
+			"depth": 3,
+			"profile": "risk6",
+			"seed": 14026,
+			"stance": "Duelist",
+			"turns": 22,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 3,
+			"profile": "risk6",
+			"seed": 14027,
+			"stance": "Duelist",
+			"turns": 15,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 3,
+			"profile": "risk6",
+			"seed": 102,
+			"stance": "Duelist",
+			"turns": 14,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 3,
+			"profile": "risk6",
+			"seed": 77,
+			"stance": "Duelist",
+			"turns": 13,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 1,
+			"depth": 3,
+			"profile": "risk6",
+			"seed": 301,
+			"stance": "Duelist",
+			"turns": 19,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 1,
+			"depth": 3,
+			"profile": "risk6",
+			"seed": 999,
+			"stance": "Duelist",
+			"turns": 18,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 5,
+			"depth": 3,
+			"profile": "risk6",
+			"seed": 14026,
+			"stance": "Reaver",
+			"turns": 21,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 2,
+			"depth": 3,
+			"profile": "risk6",
+			"seed": 14027,
+			"stance": "Reaver",
+			"turns": 14,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 3,
+			"profile": "risk6",
+			"seed": 102,
+			"stance": "Reaver",
+			"turns": 14,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 3,
+			"depth": 3,
+			"profile": "risk6",
+			"seed": 77,
+			"stance": "Reaver",
+			"turns": 17,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 1,
+			"depth": 3,
+			"profile": "risk6",
+			"seed": 301,
+			"stance": "Reaver",
+			"turns": 19,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 1,
+			"depth": 3,
+			"profile": "risk6",
+			"seed": 999,
+			"stance": "Reaver",
+			"turns": 20,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "binding",
+			"seed": 14026,
+			"stance": "Duelist",
+			"turns": 10,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "binding",
+			"seed": 14027,
+			"stance": "Duelist",
+			"turns": 15,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "binding",
+			"seed": 102,
+			"stance": "Duelist",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "binding",
+			"seed": 77,
+			"stance": "Duelist",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "binding",
+			"seed": 301,
+			"stance": "Duelist",
+			"turns": 21,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "binding",
+			"seed": 999,
+			"stance": "Duelist",
+			"turns": 15,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "binding",
+			"seed": 14026,
+			"stance": "Reaver",
+			"turns": 10,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "binding",
+			"seed": 14027,
+			"stance": "Reaver",
+			"turns": 15,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "binding",
+			"seed": 102,
+			"stance": "Reaver",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "binding",
+			"seed": 77,
+			"stance": "Reaver",
+			"turns": 15,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "binding",
+			"seed": 301,
+			"stance": "Reaver",
+			"turns": 19,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 1,
+			"profile": "binding",
+			"seed": 999,
+			"stance": "Reaver",
+			"turns": 15,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "binding",
+			"seed": 14026,
+			"stance": "Duelist",
+			"turns": 14,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "binding",
+			"seed": 14027,
+			"stance": "Duelist",
+			"turns": 15,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "binding",
+			"seed": 102,
+			"stance": "Duelist",
+			"turns": 14,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "binding",
+			"seed": 77,
+			"stance": "Duelist",
+			"turns": 18,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "binding",
+			"seed": 301,
+			"stance": "Duelist",
+			"turns": 19,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "binding",
+			"seed": 999,
+			"stance": "Duelist",
+			"turns": 14,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "binding",
+			"seed": 14026,
+			"stance": "Reaver",
+			"turns": 13,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "binding",
+			"seed": 14027,
+			"stance": "Reaver",
+			"turns": 15,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "binding",
+			"seed": 102,
+			"stance": "Reaver",
+			"turns": 14,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "binding",
+			"seed": 77,
+			"stance": "Reaver",
+			"turns": 18,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "binding",
+			"seed": 301,
+			"stance": "Reaver",
+			"turns": 19,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 2,
+			"profile": "binding",
+			"seed": 999,
+			"stance": "Reaver",
+			"turns": 14,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 4,
+			"depth": 3,
+			"profile": "binding",
+			"seed": 14026,
+			"stance": "Duelist",
+			"turns": 21,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 3,
+			"profile": "binding",
+			"seed": 14027,
+			"stance": "Duelist",
+			"turns": 15,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 3,
+			"profile": "binding",
+			"seed": 102,
+			"stance": "Duelist",
+			"turns": 14,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 3,
+			"profile": "binding",
+			"seed": 77,
+			"stance": "Duelist",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 2,
+			"depth": 3,
+			"profile": "binding",
+			"seed": 301,
+			"stance": "Duelist",
+			"turns": 20,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 3,
+			"profile": "binding",
+			"seed": 999,
+			"stance": "Duelist",
+			"turns": 19,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 4,
+			"depth": 3,
+			"profile": "binding",
+			"seed": 14026,
+			"stance": "Reaver",
+			"turns": 18,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 1,
+			"depth": 3,
+			"profile": "binding",
+			"seed": 14027,
+			"stance": "Reaver",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 3,
+			"profile": "binding",
+			"seed": 102,
+			"stance": "Reaver",
+			"turns": 13,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 3,
+			"profile": "binding",
+			"seed": 77,
+			"stance": "Reaver",
+			"turns": 17,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 2,
+			"depth": 3,
+			"profile": "binding",
+			"seed": 301,
+			"stance": "Reaver",
+			"turns": 20,
+			"waves": 5,
+			"won": true
+		},
+		{
+			"damage": 0,
+			"depth": 3,
+			"profile": "binding",
+			"seed": 999,
+			"stance": "Reaver",
+			"turns": 16,
+			"waves": 5,
+			"won": true
+		}
+	],
+	"simulation_only": true,
+	"solver_candidate_budget": 350
+}

@@ -1,0 +1,35 @@
+{
+	"exclusive_drops_per_2000_matching_kills": {
+		"B": 369,
+		"a": 54,
+		"b": 54,
+		"h": 54,
+		"s": 54,
+		"v": 54,
+		"w": 54
+	},
+	"human_playtesting": false,
+	"kills_per_run": 46,
+	"means": {
+		"common_sigils": 3.92,
+		"gear": 7.8525,
+		"gear_median": 8,
+		"gear_p10": 6,
+		"gear_p90": 10,
+		"shards": 0.306
+	},
+	"rarity_draws_100000": {
+		"epic": 9062,
+		"normal": 29852,
+		"rare": 25086,
+		"set": 2040,
+		"uncommon": 31981,
+		"unique": 1979
+	},
+	"simulated_runs": 2000,
+	"upgrade_destroyed_per_2000": {
+		"4": 108,
+		"5": 187,
+		"6": 397
+	}
+}

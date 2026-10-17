@@ -1,0 +1,146 @@
+[
+	{
+		"failure": "",
+		"profile": "baseline",
+		"seed": 14026,
+		"stance": "Duelist",
+		"turns": 49,
+		"waves": 5
+	},
+	{
+		"failure": "",
+		"profile": "baseline",
+		"seed": 14027,
+		"stance": "Duelist",
+		"turns": 21,
+		"waves": 5
+	},
+	{
+		"failure": "",
+		"profile": "baseline",
+		"seed": 102,
+		"stance": "Duelist",
+		"turns": 33,
+		"waves": 5
+	},
+	{
+		"failure": "",
+		"profile": "baseline",
+		"seed": 14026,
+		"stance": "Reaver",
+		"turns": 36,
+		"waves": 5
+	},
+	{
+		"failure": "",
+		"profile": "baseline",
+		"seed": 14027,
+		"stance": "Reaver",
+		"turns": 22,
+		"waves": 5
+	},
+	{
+		"failure": "",
+		"profile": "baseline",
+		"seed": 102,
+		"stance": "Reaver",
+		"turns": 30,
+		"waves": 5
+	},
+	{
+		"failure": "",
+		"profile": "starter",
+		"seed": 14026,
+		"stance": "Duelist",
+		"turns": 23,
+		"waves": 5
+	},
+	{
+		"failure": "",
+		"profile": "starter",
+		"seed": 14027,
+		"stance": "Duelist",
+		"turns": 17,
+		"waves": 5
+	},
+	{
+		"failure": "",
+		"profile": "starter",
+		"seed": 102,
+		"stance": "Duelist",
+		"turns": 19,
+		"waves": 5
+	},
+	{
+		"failure": "",
+		"profile": "starter",
+		"seed": 14026,
+		"stance": "Reaver",
+		"turns": 21,
+		"waves": 5
+	},
+	{
+		"failure": "",
+		"profile": "starter",
+		"seed": 14027,
+		"stance": "Reaver",
+		"turns": 18,
+		"waves": 5
+	},
+	{
+		"failure": "",
+		"profile": "starter",
+		"seed": 102,
+		"stance": "Reaver",
+		"turns": 19,
+		"waves": 5
+	},
+	{
+		"failure": "",
+		"profile": "strong",
+		"seed": 14026,
+		"stance": "Duelist",
+		"turns": 14,
+		"waves": 5
+	},
+	{
+		"failure": "",
+		"profile": "strong",
+		"seed": 14027,
+		"stance": "Duelist",
+		"turns": 16,
+		"waves": 5
+	},
+	{
+		"failure": "",
+		"profile": "strong",
+		"seed": 102,
+		"stance": "Duelist",
+		"turns": 16,
+		"waves": 5
+	},
+	{
+		"failure": "",
+		"profile": "strong",
+		"seed": 14026,
+		"stance": "Reaver",
+		"turns": 14,
+		"waves": 5
+	},
+	{
+		"failure": "",
+		"profile": "strong",
+		"seed": 14027,
+		"stance": "Reaver",
+		"turns": 16,
+		"waves": 5
+	},
+	{
+		"failure": "",
+		"profile": "strong",
+		"seed": 102,
+		"stance": "Reaver",
+		"turns": 16,
+		"waves": 5
+	}
+]
