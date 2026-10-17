@@ -14,9 +14,10 @@ def main():
     args = parser.parse_args()
     project = Path(__file__).resolve().parents[1]
     stages = [['--editor', '--import', '--quit']]
-    suites = ['test_rules.gd', 'test_gear.gd', 'test_flow.gd', 'test_economy.gd', 'test_forge_flow.gd']
+    suites = ['test_rules.gd', 'test_gear.gd', 'test_flow.gd', 'test_economy.gd', 'test_forge_flow.gd', 'test_update6.gd']
     if not args.skip_balance:
         suites.append('balance_probe.gd')
+        suites.append('balance_matrix.gd')
     suites.append('test_expedition.gd')
     stages += [['--script', 'res://tests/' + name] for name in suites]
     with tempfile.TemporaryDirectory(prefix='thornwake-qa-') as temp:

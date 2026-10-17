@@ -1,52 +1,39 @@
-# Thornwake v0.5.0 — Sigils & risk verification
+# Thornwake v0.6.0 — verification
 
-Godot 4.7.2 stable (`ed1daf0bf`), Linux, Compatibility renderer. Local suites pass in isolated player-data directories. Test count: **18,666 assertions**, including repeated seeded sampling rather than independent human test cases.
+Godot4.7.2 stable (`ed1daf0bf`), Linux, Compatibility renderer. Isolated user data. **18,832 assertions**, including repeated seeded sampling rather than independent user studies.
 
-| Suite | Observed result |
+| Suite | Result |
 | --- | --- |
-| Rules |6,337 assertions; zero failures;1,500 generated encounters;150 distinct6×6 layouts |
-| Gear regression |35 assertions; zero failures;97 destructions in1,000 corruption samples |
+| Rules |6,337 assertions; zero failures |
+| Gear regression |35 assertions; zero failures |
 | Main flow/save |113 assertions; zero failures |
-| New economy/effects |12,158 assertions; zero failures |
+| Economy/effects |12,158 assertions; zero failures |
 | Forge/hunt integration |23 assertions; zero failures |
-| Expedition integration |Two complete winning five-wave expeditions through selected routes, animations, camps, boss and results |
-| Balance probe |18/18 simulated Depth1 wins; baseline18–44 turns, new starter14–23, strong11–19 |
-| Render inspection |Actual600×1000 Godot renders: scout report, hunting guide, pack, risk quote, Sigil sockets, Binding book, Set collection |
+| New save/report/inventory/clarity |166 assertions; zero failures |
+| Full expedition integration |Two winning animated five-wave runs, camps and boss results |
+| Original balance probe |18 simulated expeditions |
+| Expanded balance matrix |144 simulated expeditions, paired seeds/stances across four fixtures and three Depths |
+| Render review |Actual600×1000 Godot screens: save/export, restore confirmation, stash tools, comparison, route preview/explanation, local report |
 
-The test runner rejects script/runtime errors even if Godot exits with code0. Integration tests fast-forward animation time; rendered screens are reviewed separately with software OpenGL. Physical Android input, performance, battery and human playtests remain unverified.
+The runner treats Godot script/runtime errors as failures even if the engine exits0. Render/report screenshots use synthetic fixtures, not human data. No physical Android/Windows execution or human playtesting has occurred.
 
-## New coverage
+New coverage includes checksum corruption, malformed JSON, future schemas, nested numeric/type errors, duplicate IDs, overlapping packed items, unchanged save on rejected import, pre-import recovery, saved camp export from title, double restore protection, actual desktop file-dialog save/load callbacks, one exclusive picker at a time, protection at all destructive backend entry points, retained flags, complete and repeated unsocketing, field-only access at camp, sorting/filtering/search, nonmutating capped comparisons, bounded/idempotent reports, correct medians, recording opt-out, two unowned camp choices, legacy Edge cap and explained damage summing to actual hit power.
 
-- Old Magic→Uncommon migration, retained gear/currencies, initialized exclusive pouch/marks/pity; +6 and exclusive sockets survive JSON roundtrip.
-- Every Binding's exact sequence, base and reachable socket count.
-- Actual conditional combat: guard spent for power, cover power, wounded-target follow-up, armor Temper, kill-required magic escape and five-kill healing. Reducer includes original killed species for loot, including cleaves.
-- +1–+3 safe; risk cannot spend without acceptance; correct cost on success or destruction; inserted Sigils consumed on destruction; stale target-level confirmation cannot advance another tier; maximum +6 preserved.
-- Actual UI risk quote/cancel/accept, repeated confirmation, immediate saved result; scrollable Sigil/recipe screens; Set selection and repeated claim spending guard.
-- Matching-exclusive source isolation, boss10th-kill guarantee/reset/reload, duplicate source guards, exactly-once boss mark.
-- Actual animated Warden kill passes species into the drop channel, triggers saved pity, banks mark and clears checkpoint; repeated completion cannot duplicate rewards.
-- Active planning, animation and camp time persisted separately; no background accumulation.
+The expanded solver uses350 candidate routes and a maximum route length10, with perfect rule knowledge. It assumes fixed gear, no camp crafting, and first-offered boon selection. The safe/risk fixtures assume gear availability and survival; the simulation does not model human difficulty, real run time, retention or long-term economy. `tests/balance_matrix.json` contains cases and group results.
 
-## Seeded economy simulation — not human playtesting
+| Fixture | Depth1 wins | Depth2 wins | Depth3 wins | Depth3 median winning turns |
+| --- | ---: | ---: | ---: | ---: |
+| Baseline |12/12 |4/12 |0/12 |— |
+| Safe +3 |12/12 |12/12 |12/12 |18.5 |
+| Risky +6 |12/12 |12/12 |12/12 |17.5 |
+| Starter Binding |12/12 |12/12 |12/12 |16.5 |
 
-Actual GDScript loot functions,2,000 full clears of46 enemies, seed888:
+The low damage suffered by optimized fixtures remains a tuning risk. Higher Depth4–5 are not balance-tested by this matrix. Existing sampled generation checks cover board validity, not a proof that every seed/loadout has a winning strategy.
 
-| Metric | Mean / observed |
-| --- | ---: |
-| Gear per clear |7.8525 |
-| Gear10th /50th /90th percentile |6 /8 /10 |
-| Common Sigils per clear |3.92 |
-| Corruption shards per clear |0.306 |
+Existing economy simulation remains unchanged:2,000 full46-kill clears averaged7.8525 gear,3.92 common Sigils and0.306 shards; gear10th/50th/90th percentiles6/8/10. Exclusive drops are additional. See `tests/economy_results.json`.
 
-Exclusive drops are additional to common quantities.100,000 rarity draws: Normal29,852; Uncommon31,981; Rare25,086; Epic9,062; Unique1,979; Set2,040.2,000 upgrade attempts per tier: +4 destroyed108; +5 destroyed187; +6 destroyed397.2,000 matching regular kills yielded54 exclusives in each controlled test; the same RNG stream was deliberately reused to verify source mapping. The Warden sample yielded369/2,000 due to saved pity, so effective rate exceeds its15% raw roll.
+CI independently repeats the checks and exports Android debug APK and Windows debug EXE/PCK. It verifies the APK signature and checks the expected certificate when private signing secrets are configured. Inspect the successful v0.6.0 run/artifact before claiming its export. No store release/signing or independent audit is claimed. Artifact retention14 days.
 
-`tests/economy_results.json` contains reproducible summaries. Fresh-profile full-clear simulations do not model failures, chosen enemy targets, repeated campaigns, item usefulness or long-term collection behavior. The6–9-minute run goal is unmeasured with humans. Higher Depth validity is sampled; winning strategies are not proven for every seed/loadout.
+Source save migration preserves gear/currencies/flags/checkpoints. Consistent Android signing requires repository secret setup and does not recover earlier disposable keys. No key is committed. Mobile backup uses code/clipboard; mobile document-provider integration and actual clipboard/device behavior remain unverified.
 
-## Export status and limitations
-
-Matching Android/Windows debug exports succeeded for v0.4.0. The v0.5.0 workflow independently reruns all checks and exports; use its actual successful artifact for the current build. No device execution or store submission is claimed. CI artifacts expire after14 days.
-
-CI generates a disposable debug signing key per run. Installing over an earlier CI APK may require uninstalling it, which removes app data. Use a consistent local debug keystore for ongoing Android progression testing; preserve test saves before changing signing/installations. Source save migration does not bypass Android signature checks.
-
-Known risks: optimized early builds are easy; higher Depth and new effect interactions need people; optional item destruction does not solve hoarding by itself; regular exclusive drops may take many runs with sparse populations; larger stash needs filters; art remains provisional.
-
-Run `python3 tools/run_checks.py --godot /path/to/godot`. `tests/visual_sigils.gd` requires a display and isolated user data. No remote analytics or personal information collection.
+Run: `python3 tools/run_checks.py --godot /path/to/godot`. Display required for `tests/visual_update6.gd`; isolate user data. No remote analytics.

@@ -14,6 +14,11 @@ var message="Select an item, then Place / Move and tap its top-left cell."
 var dialog: Control
 var grid: Control
 var confirmation_active=false
+var sort_order="Newest"
+var quality_filter="All"
+var search_text=""
+var compare_id=""
+var tools_page=0
 func _ready() -> void:
 	size=Vector2(600,1000)
 	render()
@@ -54,7 +59,8 @@ func render() -> void:
 	var bg=ColorRect.new()
 	bg.color=Color("101f24"); bg.size=size
 	add_child(bg)
-	label("PACK & FORGE",Rect2(36,22,285,48),28)
+	label("PACK",Rect2(36,22,180,48),28)
+	button("Tools",Rect2(230,20,104,52),tools_dialog)
 	button("Guide",Rect2(340,20,104,52),help_dialog)
 	button("Done",Rect2(460,20,104,52),func(): closed.emit())
 	grid=Grid.new()
@@ -68,11 +74,7 @@ func render() -> void:
 	for stat in Gear.STATS:
 		if stat not in Gear.BASIC_STATS and int(total.get(stat,0))>0:specials+=1
 	label("Edge %d • HP +%d • Ward %d • Focus %d\nLeech %d • Bulwark %d • %d special traits • caps apply" % [total.edge,total.vitality,total.ward,total.focus,total.leech,total.bulwark,specials],Rect2(36,531,528,40),16,Color("b4d5b7"))
-	var available=[]
-	for item in profile.items:
-		if item.location=="bag": continue
-		if camp and item.location!="field": continue
-		available.append(item)
+	var available=Gear.query(profile,camp,quality_filter,sort_order,search_text)
 	var max_page=maxi(0,(available.size()-1)/3)
 	page=clampi(page,0,max_page)
 	button("<",Rect2(36,604,42,62),func(): page=maxi(0,page-1); render())
@@ -81,13 +83,13 @@ func render() -> void:
 		if index>=available.size(): break
 		var item: Dictionary=available[index]
 		var id: String=item.id
-		var b=button(Gear.name_of(item),Rect2(84+n*146,604,140,62),func(): selected=id; placing=false; render())
+		var b=button(("★ " if item.get("favorite",false) else "")+("[L] " if item.get("locked",false) else "")+Gear.name_of(item),Rect2(84+n*146,604,140,62),func(): selected=id; placing=false; render())
 		b.add_theme_color_override("font_color",Color(Gear.COLORS[Gear.quality(item)]))
 	button(">",Rect2(522,604,42,62),func(): page=mini(max_page,page+1); render())
 	label(("FIELD FINDS" if camp else "STASH")+"  %d items • page %d/%d" % [available.size(),page+1,max_page+1],Rect2(36,574,528,25),16)
 	var item=selected_item()
 	if not item.is_empty():
-		var details=Gear.name_of(item)+"  ["+Gear.quality(item).to_upper()+"]\n"+Gear.describe_stats(Gear.item_stats(item))+"\nSockets: "+socket_summary(item)+("\nCORRUPTED: upgrades/socket count sealed" if not item.corruption.is_empty() else "")
+		var details=("LOCKED • " if item.get("locked",false) else "")+("FAVORITE • " if item.get("favorite",false) else "")+Gear.name_of(item)+"  ["+Gear.quality(item).to_upper()+"]\n"+Gear.describe_stats(Gear.item_stats(item))+"\nSockets: "+socket_summary(item)+("\nCORRUPTED: upgrades/socket count sealed" if not item.corruption.is_empty() else "")
 		var detail_scroll=ScrollContainer.new();detail_scroll.name="ItemDetails";detail_scroll.position=Vector2(36,681);detail_scroll.size=Vector2(422,88);add_child(detail_scroll)
 		var detail_copy=Label.new();detail_copy.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;detail_copy.custom_minimum_size=Vector2(398,0)
 		detail_copy.add_theme_font_size_override("font_size",16);detail_copy.add_theme_color_override("font_color",Color(Gear.COLORS[Gear.quality(item)]));detail_copy.text=details;detail_scroll.add_child(detail_copy)
@@ -178,7 +180,8 @@ func socket_dialog() -> void:
 		choice.custom_minimum_size=Vector2(246,74);choice.add_theme_font_size_override("font_size",17)
 		choice.disabled=profile.runes[name]<=0 or item.sockets.is_empty()
 	label("Select socket, then Sigil. Scroll for enemy Sigils.\n"+message,Rect2(36,636,528,65),17,Color("b4d5b7"),dialog)
-	button("Remove selected Sigil",Rect2(36,712,528,55),func():message=Gear.remove_rune(profile,selected,socket_index);changed.emit("sigil_remove",{});socket_dialog(),dialog)
+	button("Remove selected",Rect2(36,712,254,55),func():message=Gear.remove_rune(profile,selected,socket_index);changed.emit("sigil_remove",{});socket_dialog(),dialog)
+	button("Remove all",Rect2(310,712,254,55),func():var result=Gear.unsocket_all(profile,selected);message=result.message;changed.emit("sigil_remove_all",{"count":result.count});socket_dialog(),dialog)
 	button("Binding recipes & effects",Rect2(36,785,528,60),binding_dialog,dialog)
 	button("Back to pack",Rect2(36,880,528,60),render,dialog)
 func binding_dialog() -> void:
@@ -200,6 +203,7 @@ func collection_dialog() -> void:
 	button("Back",Rect2(36,880,528,60),render,dialog)
 func corruption_dialog() -> void:
 	var item=selected_item()
+	if item.get("locked",false):message="Locked: unlock in Tools before corruption.";render();return
 	if item.is_empty(): message="Select an item first."; render(); return
 	panel("CORRUPTION — ONE ATTEMPT")
 	label(Gear.name_of(item)+"\n\nCosts 1 corruption shard.\n\n90%: add +2 to one randomly chosen trait.\n10%: destroy this item and ALL socketed Sigils.\n\nSuccess seals the upgrade tier and socket count. You may still insert or remove Sigils. Trait caps may limit the immediate benefit to your current build.\n\nThis choice is irreversible during normal play.",Rect2(36,145,528,600),24,Color("edcfb6"),dialog)
@@ -212,10 +216,11 @@ func corruption_dialog() -> void:
 	button("Cancel",Rect2(36,875,528,60),render,dialog)
 func salvage_dialog() -> void:
 	var item=selected_item()
+	if item.get("locked",false):message="Locked: unlock in Tools before salvage.";render();return
 	if item.is_empty(): message="Select an item first."; render(); return
 	panel("SALVAGE ITEM")
 	label("Permanently dismantle "+Gear.name_of(item)+"?\n\nGain %d scrap. All socketed Sigils return to your Sigil pouch." % (3+int(item.tier)*2),Rect2(36,160,528,320),24,Color("e4e9d9"),dialog)
-	button("Salvage",Rect2(36,745,528,60),func(): message=Gear.salvage(profile,selected); selected=""; change("gear_salvage"),dialog)
+	button("Salvage",Rect2(36,745,528,60),func(): message=Gear.salvage(profile,selected); selected=""; change("gear_salvage",{"salvaged":message.begins_with("Salvaged")}),dialog)
 	button("Cancel",Rect2(36,835,528,60),render,dialog)
 
 func socket_summary(item: Dictionary) -> String:
@@ -223,3 +228,58 @@ func socket_summary(item: Dictionary) -> String:
 	var names=[]
 	for rune in item.sockets: names.append("Empty" if rune.is_empty() else rune)
 	return " | ".join(names)
+
+func tools_dialog() -> void:
+	panel("STASH TOOLS")
+	var order=OptionButton.new();order.position=Vector2(36,130);order.size=Vector2(254,50);order.add_theme_font_size_override("font_size",18)
+	var orders=["Newest","Name","Tier","Quality"]
+	for value in orders:order.add_item(value)
+	order.select(orders.find(sort_order));order.item_selected.connect(func(index):sort_order=orders[index];page=0;tools_page=0;tools_dialog());dialog.add_child(order)
+	var filter=OptionButton.new();filter.position=Vector2(310,130);filter.size=Vector2(254,50);filter.add_theme_font_size_override("font_size",18)
+	var filters=["All","Favorites","Locked","Normal","Uncommon","Rare","Epic","Unique","Set","Binding"]
+	for value in filters:filter.add_item(value)
+	filter.select(filters.find(quality_filter));filter.item_selected.connect(func(index):quality_filter=filters[index];page=0;tools_page=0;tools_dialog());dialog.add_child(filter)
+	var search=LineEdit.new();search.position=Vector2(36,195);search.size=Vector2(528,50);search.placeholder_text="Search name, base or Sigil; Enter to apply";search.text=search_text;search.add_theme_font_size_override("font_size",17)
+	search.text_changed.connect(func(value):search_text=value)
+	search.text_submitted.connect(func(value):search_text=value;page=0;tools_page=0;tools_dialog());dialog.add_child(search)
+	var scroll=ScrollContainer.new();scroll.position=Vector2(36,275);scroll.size=Vector2(528,300);dialog.add_child(scroll)
+	var list=VBoxContainer.new();list.add_theme_constant_override("separation",8);scroll.add_child(list)
+	var entries=Gear.query(profile,camp,quality_filter,sort_order,search_text,true)
+	var pages=maxi(1,ceili(entries.size()/40.0));tools_page=clampi(tools_page,0,pages-1)
+	label("%d matches • page %d / %d" % [entries.size(),tools_page+1,pages],Rect2(36,247,528,26),16,Color("b4d5b7"),dialog)
+	for item in entries.slice(tools_page*40,tools_page*40+40):
+		var id: String=item.id
+		var caption=("★ " if item.get("favorite",false) else "")+("[LOCK] " if item.get("locked",false) else "")+Gear.name_of(item)+" • "+Gear.quality(item)+(" • packed" if item.location=="bag" else "")
+		var row=button(caption,Rect2(0,0,500,56),func():selected=id;tools_dialog(),list);row.custom_minimum_size=Vector2(500,56)
+	if entries.is_empty():label("No matches. Change filters or clear search.",Rect2(36,275,490,70),19,Color("b4d5b7"),dialog)
+	var item=selected_item()
+	button("Previous",Rect2(36,590,254,50),func():tools_page=maxi(0,tools_page-1);tools_dialog(),dialog)
+	button("Next",Rect2(310,590,254,50),func():tools_page=mini(pages-1,tools_page+1);tools_dialog(),dialog)
+	label(Gear.name_of(item) if not item.is_empty() else "Select any row or packed item.",Rect2(36,650,528,28),17,Color("b4d5b7"),dialog)
+	button(("Unfavorite" if item.get("favorite",false) else "Favorite"),Rect2(36,685,254,55),func():Gear.flag(profile,selected,"favorite");changed.emit("gear_flag",{});tools_dialog(),dialog)
+	button(("Unlock" if item.get("locked",false) else "Lock destruction"),Rect2(310,685,254,55),func():Gear.flag(profile,selected,"locked");changed.emit("gear_flag",{});tools_dialog(),dialog)
+	button("Compare selected item",Rect2(36,760,528,55),compare_dialog,dialog)
+	label("Lock blocks salvage, corruption and risky upgrades. Safe upgrades and Sigil recovery remain available.",Rect2(36,830,528,45),16,Color("b4d5b7"),dialog)
+	button("Back to pack",Rect2(36,900,528,60),render,dialog)
+func compare_dialog() -> void:
+	var item=selected_item()
+	if item.is_empty():message="Select a candidate first.";render();return
+	panel("COMPARE GEAR")
+	var refs=[]
+	for entry in profile.items:
+		if entry.id!=selected and entry.location=="bag":refs.append(entry)
+	if refs.is_empty():
+		label("Pack a reference item first.",Rect2(36,160,528,100),22,Color("b4d5b7"),dialog)
+	else:
+		if not compare_id in refs.map(func(entry):return entry.id):compare_id=refs[0].id
+		var selector=OptionButton.new();selector.position=Vector2(36,140);selector.size=Vector2(528,55);selector.add_theme_font_size_override("font_size",18)
+		for entry in refs:selector.add_item(Gear.name_of(entry))
+		for index in refs.size():
+			if refs[index].id==compare_id:selector.select(index)
+		selector.item_selected.connect(func(index):compare_id=refs[index].id;compare_dialog());dialog.add_child(selector)
+		var result=Gear.compare(profile,selected,compare_id)
+		var lines=["CANDIDATE: "+Gear.name_of(item),"Footprint: %d cells; rotate/rearrange manually." % Gear.cells(item).size(),"ITEM TRAIT DIFFERENCES\n"+Gear.delta_text(result.get("raw",{}))]
+		if not result.get("effective",{}).is_empty():lines.append("EFFECTIVE PACK CHANGE\n"+Gear.delta_text(result.effective))
+		lines.append(result.message)
+		scroll_copy("\n\n".join(lines),Rect2(36,230,528,570),20)
+	button("Back to Tools",Rect2(36,880,528,60),tools_dialog,dialog)

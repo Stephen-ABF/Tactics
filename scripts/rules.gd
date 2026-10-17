@@ -144,7 +144,7 @@ static func enemies_left(state: Dictionary) -> int:
 		if enemy(tile):count+=1
 	return count
 static func resolve(state: Dictionary,route: Array) -> Dictionary:
-	var result={"valid":false,"reason":"Choose an adjoining cell.","damage":0,"kills":0,"momentum":0,"guard_used":0,"hits":[],"attacks":[],"defeated":[],"healing":0,"threats":[],"state":state.duplicate(true)}
+	var result={"valid":false,"reason":"Choose an adjoining cell.","damage":0,"kills":0,"momentum":0,"guard_used":0,"hits":[],"attacks":[],"defeated":[],"guard_notes":[],"healing_sources":[],"spring":false,"healing":0,"threats":[],"state":state.duplicate(true)}
 	var n=side(state)
 	if state.status!="playing" or route.is_empty() or route.size()>n*n:return result
 	var next: Dictionary=result.state
@@ -164,15 +164,26 @@ static func resolve(state: Dictionary,route: Array) -> Dictionary:
 		var tile: Dictionary=next.tiles[i]
 		if enemy(tile):
 			var power=1+momentum+int(gear.get("edge",0))+(int(gear.get("pierce",0)) if tile.kind in ["h","b"] else 0)
-			if tile.hp<tile.max_hp:power+=int(gear.get("wound",0))
+			var parts=[{"source":"base","amount":1}]
+			if momentum>0:parts.append({"source":"momentum","amount":momentum})
+			if int(gear.get("edge",0))>0:parts.append({"source":"Edge","amount":int(gear.edge)})
+			if tile.kind in ["h","b"] and int(gear.get("pierce",0))>0:parts.append({"source":"Armor break","amount":int(gear.pierce)})
+			if tile.hp<tile.max_hp:
+				power+=int(gear.get("wound",0))
+				if int(gear.get("wound",0))>0:parts.append({"source":"Venom against wounded target","amount":int(gear.wound)})
 			if first_attack:
-				if state.tiles[state.player].kind=="c":power+=int(gear.get("cover_power",0))
-				if tile.max_hp>=4:power+=int(gear.get("temper",0))
+				if state.tiles[state.player].kind=="c":
+					power+=int(gear.get("cover_power",0))
+					if int(gear.get("cover_power",0))>0:parts.append({"source":"Cover strike","amount":int(gear.cover_power)})
+				if tile.max_hp>=4:
+					power+=int(gear.get("temper",0))
+					if int(gear.get("temper",0))>0:parts.append({"source":"Temper against armored target","amount":int(gear.temper)})
 				if next.guard>0 and int(gear.get("counter",0))>0:
 					next.guard-=1;power+=2*int(gear.counter)
+					parts.append({"source":"Counter (spends 1 guard)","amount":2*int(gear.counter)});result.guard_notes.append("Counter spent 1 starting guard.")
 				first_attack=false
 			var lethal=tile.hp<=power
-			result.attacks.append({"to":i,"power":power,"lethal":lethal,"cleave":false})
+			result.attacks.append({"to":i,"power":power,"lethal":lethal,"cleave":false,"parts":parts})
 			result.hits.append(i)
 			if not lethal:
 				if step!=route.size()-1:
@@ -193,8 +204,12 @@ static func resolve(state: Dictionary,route: Array) -> Dictionary:
 				return result
 			cursor=i
 	next.player=cursor
-	if next.stance=="Duelist" and result.kills==3:next.guard=maxi(next.guard,1)
-	if result.kills>=1 and result.kills<=3:next.guard=mini(4,next.guard+int(gear.get("bulwark",0)))
+	if next.stance=="Duelist" and result.kills==3:
+		var gain=maxi(next.guard,1)-next.guard;next.guard+=gain
+		if gain>0:result.guard_notes.append("Duelist restored 1 guard after exactly 3 kills.")
+	if result.kills>=1 and result.kills<=3:
+		var gain=mini(4,next.guard+int(gear.get("bulwark",0)))-next.guard;next.guard+=gain
+		if gain>0:result.guard_notes.append("Bulwark granted %d guard after a short kill route." % gain)
 	if next.stance=="Reaver" and result.kills>=6:
 		for i in neighbors(cursor,n):
 			if enemy(next.tiles[i]):
@@ -214,8 +229,11 @@ static func resolve(state: Dictionary,route: Array) -> Dictionary:
 			if mark.type in ["w","B"]:
 				if state.player in mark.cells:marked_start=true
 				if cursor in mark.cells:marked_landing=true
-		if marked_start and not marked_landing:next.guard=mini(4,next.guard+int(gear.hexstep))
+		if marked_start and not marked_landing:
+			var gain=mini(4,next.guard+int(gear.hexstep))-next.guard;next.guard+=gain
+			if gain>0:result.guard_notes.append("Spellstep granted %d guard for killing and escaping magic marks." % gain)
 	var spring=next.tiles[cursor].kind=="f"
+	result.spring=spring
 	if spring:next.poison=0;next.tiles[cursor].kind="."
 	# Boss defeat ends the encounter immediately; surviving minions do not retaliate.
 	if not next.boss_defeated:result.threats=threats(next,cursor)
@@ -234,6 +252,10 @@ static func resolve(state: Dictionary,route: Array) -> Dictionary:
 	next.hp=maxi(0,int(next.hp)-result.damage)
 	if next.hp>0:
 		var recovery=(int(gear.get("leech",0))+int(gear.get("bloom",0)) if result.kills>=5 else 0)+(2 if spring else 0)
+		if result.kills>=5:
+			if int(gear.get("leech",0))>0:result.healing_sources.append("Leech: up to %d HP" % int(gear.leech))
+			if int(gear.get("bloom",0))>0:result.healing_sources.append("Heartbloom: up to %d HP" % int(gear.bloom))
+		if spring:result.healing_sources.append("Spring: up to 2 HP")
 		result.healing=mini(recovery,int(next.max_hp)-int(next.hp))
 		next.hp+=result.healing
 	next.kills+=result.kills;next.materials+=result.kills;next.turn+=1

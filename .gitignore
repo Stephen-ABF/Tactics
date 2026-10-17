@@ -9,3 +9,5 @@ preview/
 *.pck
 *.zip
 .DS_Store
+
+*.import

@@ -108,3 +108,7 @@ Warden: shield/coat/charm; two distinct parts grant Ward1; three add Bulwark1/Le
 At home: Forge Guide → Set collection. Six Warden marks buy the chosen base's Set version. A mark is granted once per boss victory. This is a deterministic missing-piece route; it does not change the random2% Set drop rate. Marks cannot be redeemed at camp.
 
 All odds are initial Thornwake design values, not claimed industry benchmarks. Offline saves remain editable; this is not tamper-resistant server storage.
+
+## v0.6.0 follow-up
+
+Pack Tools adds sort/filter/search, favorites, destructive-operation locks and capped comparisons. Remove all safely recovers socketed Sigils. Camp boons no longer repeat and combined Edge caps at3 on new waves. Existing wave snapshots stay intact. Upgrade/drop/corruption odds above are unchanged.

@@ -1,4 +1,6 @@
 extends Control
+const Stats=preload("res://scripts/playtest.gd")
+const Explain=preload("res://scripts/combat_explain.gd")
 const Rules=preload("res://scripts/rules.gd")
 const Content=preload("res://scripts/content.gd")
 const Save=preload("res://scripts/save_store.gd")
@@ -6,6 +8,11 @@ const Gear=preload("res://scripts/gear.gd")
 const PackUI=preload("res://scripts/pack_ui.gd")
 const BoardScene=preload("res://scenes/board.tscn")
 const Sound=preload("res://scripts/audio.gd")
+var report_eligible=false
+var run_metrics=Stats.metrics()
+var file_picker: FileDialog
+var backup_editor: TextEdit
+var staged_backup=""
 var canvas: Control
 var board: ThornBoard
 var audio: ThornAudio
@@ -48,6 +55,8 @@ func _ready() -> void:
 	get_tree().auto_accept_quit=false
 	prefs=Save.read_save()
 	prefs.version=3
+	prefs.playtest=Stats.normalize(prefs.playtest)
+	Save.events_enabled=prefs.playtest_mode
 	var valid_snapshot=normalize_snapshot(prefs.run)
 	prefs.run=valid_snapshot
 	prefs.gear=Gear.normalize(prefs.gear,not valid_snapshot.is_empty())
@@ -103,34 +112,11 @@ func clear_screen() -> void:
 func persist() -> void:
 	save_failed=not Save.write_save(prefs)
 func normalize_snapshot(raw: Dictionary) -> Dictionary:
-	if raw.is_empty() or int(raw.get("version",0))!=1 or raw.get("phase","") not in ["game","camp"]:return {}
-	if not raw.get("state") is Dictionary:return {}
-	var checked=Rules.normalize_saved(raw.state)
-	if checked.is_empty() or checked.status=="lost":return {}
-	if (raw.phase=="camp" and (checked.status!="won" or checked.encounter>=4)) or (raw.phase=="game" and checked.status!="playing"):return {}
-	if not raw.get("id") is String or raw.id.is_empty() or not raw.get("boons") is Array:return {}
-	var copy=raw.duplicate(true);copy.state=checked
-	var clean=[]
-	for id in copy.boons:
-		if not Content.BOONS.has(id):return {}
-		clean.append(id)
-	if clean.size()!=checked.encounter:return {}
-	copy.boons=clean
-	for key in ["bank","total_kills","run_loot","seconds"]:
-		if not (copy.get(key) is int or copy.get(key) is float) or copy[key]<0:return {}
-	copy.bank=int(copy.bank);copy.total_kills=int(copy.total_kills);copy.run_loot=int(copy.run_loot);copy.seconds=float(copy.seconds)
-	for key in ["camp_seconds","planning_seconds","animation_seconds"]:
-		var value=copy.get(key,0.0)
-		if not (value is int or value is float) or value<0:return {}
-		copy[key]=float(value)
-	copy.stance=copy.get("stance",checked.stance)
-	if copy.stance not in ["Duelist","Reaver"]:return {}
-	copy.choice=str(copy.get("choice",""))
-	if not copy.choice.is_empty() and copy.choice not in Content.choices(checked.seed,checked.encounter):copy.choice=""
-	return copy
+	return Save.normalize_checkpoint(raw)
 func checkpoint(phase: String="game") -> void:
 	if training or settled:return
-	prefs.run={"version":1,"phase":phase,"state":state.duplicate(true),"id":run_id,"stance":stance,"boons":boons.duplicate(),"choice":selected_boon,"bank":bank,"total_kills":total_kills,"run_loot":run_loot,"seconds":active_seconds,"camp_seconds":camp_seconds,"planning_seconds":planning_seconds,"animation_seconds":animation_seconds}
+	if state.get("status","")=="won" and encounter<4:phase="camp"
+	prefs.run={"version":1,"phase":phase,"state":state.duplicate(true),"id":run_id,"stance":stance,"boons":boons.duplicate(),"choice":selected_boon,"bank":bank,"total_kills":total_kills,"run_loot":run_loot,"seconds":active_seconds,"camp_seconds":camp_seconds,"planning_seconds":planning_seconds,"animation_seconds":animation_seconds,"metrics":run_metrics.duplicate(),"report_eligible":report_eligible}
 	persist()
 func show_title() -> void:
 	clear_screen();screen="title"
@@ -147,8 +133,9 @@ func show_title() -> void:
 	button("Backpack & forge",Rect2(36,665,528,60),func():open_pack(false))
 	button("Learn to play",Rect2(36,740,254,56),func():show_help(true))
 	button("Hunting guide",Rect2(310,740,254,56),show_codex)
-	button("Settings",Rect2(36,812,528,54),show_settings)
-	text("v0.5.0 • SIGILS & RISK TEST BUILD\n%d wins / %d runs • %d supplies" % [prefs.wins,prefs.runs,prefs.materials],39,890,522,62,16,Color("9ab3a4"))
+	button("Settings",Rect2(36,812,254,54),show_settings)
+	button("Playtest",Rect2(310,812,254,54),show_playtest)
+	text("v0.6.0 • PLAYTEST & PROTECTION BUILD\n%d wins / %d runs • %d supplies" % [prefs.wins,prefs.runs,prefs.materials],39,890,522,62,16,Color("9ab3a4"))
 	text("Save failed; check writable storage." if save_failed else title_notice,39,955,522,35,16,Color("e7b098"))
 func confirm_new() -> void:
 	modal("START A NEW EXPEDITION?","Your saved encounter will end. Packed gear and collected loot stay safe.","new")
@@ -176,10 +163,11 @@ func start_run(tutorial: bool=false,requested_seed: int=-1) -> void:
 	if not prefs.run.is_empty() and not settled and not tutorial:return
 	training=tutorial;run_id=Gear.uid();run_loot=0;boons=[];selected_boon=""
 	seed_value=14026 if tutorial else (requested_seed if requested_seed>=0 else int(Time.get_unix_time_from_system())%1000000)
-	encounter=0;bank=0;total_kills=0;active_seconds=0;camp_seconds=0;planning_seconds=0;animation_seconds=0;settled=false
+	encounter=0;bank=0;total_kills=0;active_seconds=0;camp_seconds=0;planning_seconds=0;animation_seconds=0;run_metrics=Stats.metrics();report_eligible=prefs.playtest_mode and not tutorial;settled=false
 	if not tutorial:Gear.bank_field(prefs.gear)
 	var bonus={} if tutorial else Content.combine(Gear.bonuses(prefs.gear),boons)
 	state=Rules.new_board(seed_value,0,stance,Rules.MAX_HP+int(bonus.get("vitality",0)),bonus,1 if tutorial else depth)
+	if not tutorial and prefs.playtest_mode and last_finished>0 and Time.get_ticks_msec()-last_finished<15000:prefs.playtest.retries+=1
 	Save.log_event("run_start",{"id":run_id,"seed":seed_value,"depth":depth,"gear":bonus,"training":training,"immediate_retry":last_finished>0 and Time.get_ticks_msec()-last_finished<15000})
 	checkpoint();show_game()
 func resume_run() -> void:
@@ -187,7 +175,7 @@ func resume_run() -> void:
 	if saved.is_empty():prefs.run={};Gear.bank_field(prefs.gear);persist();show_title();return
 	state=saved.state;seed_value=state.seed;encounter=state.encounter;depth=state.depth;stance=saved.stance
 	run_id=saved.id;boons=saved.boons;bank=saved.bank;total_kills=saved.total_kills;run_loot=saved.run_loot;active_seconds=saved.seconds;camp_seconds=saved.camp_seconds;planning_seconds=saved.planning_seconds;animation_seconds=saved.animation_seconds;selected_boon=saved.choice
-	training=false;settled=false
+	training=false;settled=false;run_metrics=saved.metrics;report_eligible=saved.report_eligible
 	Save.log_event("run_resume",{"id":run_id,"wave":encounter})
 	if saved.phase=="camp":show_camp()
 	else:show_game()
@@ -209,7 +197,8 @@ func show_game() -> void:
 	button("Undo",Rect2(306,818,120,60),undo);button("Clear",Rect2(442,818,128,60),clear_route)
 	text("Tap adjoining cells • empty-cell stride: %d" % (2+int(state.gear.get("stride",0))),30,890,540,30,17,Color("a5c4a7"))
 	button("Rules",Rect2(30,934,110,50),func():show_help(false))
-	text("Seed %d • %s • Depth %d" % [seed_value,stance,depth],155,936,415,44,15,Color("a0b7a8"))
+	button("Why?",Rect2(150,934,100,50),show_route_explanation)
+	text("Seed %d • %s • Depth %d" % [seed_value,stance,depth],265,936,305,44,14,Color("a0b7a8"))
 	update_preview()
 func select_cell(i: int) -> void:
 	if screen!="game" or paused or busy:return
@@ -218,7 +207,7 @@ func select_cell(i: int) -> void:
 	else:
 		var candidate=route+[i]
 		var check=Rules.resolve(state,candidate)
-		if not check.valid:info_label.text=check.reason;audio.tone(130);Save.log_event("route_rejected",{"reason":check.reason});return
+		if not check.valid:run_metrics.mistakes+=1;info_label.text=check.reason;audio.tone(130);Save.log_event("route_rejected",{"reason":check.reason});return
 		route=candidate
 	audio.tone(380+route.size()*25,0.04);update_preview()
 func update_preview() -> void:
@@ -228,7 +217,7 @@ func update_preview() -> void:
 		info_label.text="Plan a route, inspect danger, then Strike.\n"+("Practice: defeat a scout." if training else "Amber = arrows • purple crosses = spells • coral = boss")
 	elif preview.valid:
 		info_label.text="%d kills • %d momentum • %d damage • +%d healing\n" % [preview.kills,preview.momentum,preview.damage,preview.healing]
-		info_label.text+="Enemy survives: lunge, chip, return." if preview.state.player!=route.back() else ("Safe landing." if preview.damage==0 else "Survivors strike after your move. Try another landing.")
+		info_label.text+="Enemy survives: lunge, chip, return." if preview.state.player!=route.back() else ("Safe landing. Tap Why? for details." if preview.damage==0 else "Survivors strike after your move. Tap Why? to inspect.")
 	board.state=state;board.route=route;board.preview=preview
 func undo() -> void:
 	if paused or busy:return
@@ -246,18 +235,30 @@ func execute_move() -> void:
 func loot(source: String,options: Dictionary={}) -> Array:
 	var key=run_id+":"+source
 	var rng=RandomNumberGenerator.new();rng.seed=hash(key)
+	var before_items=prefs.gear.items.size()
+	var before_common=0;var before_exclusive=0
+	for sigil in Gear.SIGILS:
+		if sigil in Gear.COMMON_SIGILS:before_common+=prefs.gear.runes[sigil]
+		else:before_exclusive+=prefs.gear.runes[sigil]
 	var finds=Gear.roll_loot(prefs.gear,key,rng,options)
+	run_metrics.gear+=prefs.gear.items.size()-before_items
+	for sigil in Gear.SIGILS:
+		if sigil in Gear.COMMON_SIGILS:run_metrics.common+=prefs.gear.runes[sigil]
+		else:run_metrics.exclusive+=prefs.gear.runes[sigil]
+	run_metrics.common-=before_common;run_metrics.exclusive-=before_exclusive
 	run_loot+=finds.size()
 	if not finds.is_empty():Save.log_event("loot_drop",{"id":run_id,"source":key,"channel":options,"finds":finds})
 	return finds
 func commit_move() -> void:
 	if not busy:return
 	var previous=int(state.kills)
-	state=pending.state;route=[];busy=false;update_preview()
+	state=pending.state;route=[];busy=false;run_metrics.decisions+=1;run_metrics.damage+=pending.damage;update_preview()
 	Save.log_event("move",{"id":run_id,"wave":encounter,"turn":state.turn,"kills":pending.kills,"damage":pending.damage,"healing":pending.healing,"momentum":pending.momentum,"route_cells":pending.get("route_cells",0)})
 	if training:
 		if pending.kills>0:
-			prefs.tutorial=true;persist();Save.log_event("tutorial_complete")
+			prefs.tutorial=true
+			if prefs.playtest_mode:prefs.playtest.tutorials+=1
+			persist();Save.log_event("tutorial_complete")
 			modal("YOU HAVE YOUR FIRST ROUTE","You planned, previewed and struck.\n\nThe full expedition grows from 3 x 3 to a 6 x 6 boss arena. Read marks and try different landings.","training")
 			modal_button("Resume saved expedition" if not prefs.run.is_empty() else "Begin expedition",760,func():
 				if not prefs.run.is_empty():resume_run()
@@ -286,7 +287,7 @@ func show_camp() -> void:
 	var n=int(Content.SIDES[next_wave])
 	text("NEXT: "+Content.ZONES[Content.zone(seed_value,next_wave)].name+"\n%d x %d %s" % [n,n,"BOSS ARENA" if next_wave==4 else "BATTLEFIELD"],36,145,528,85,25)
 	text("Choose one expedition boon:",36,260,528,35,20)
-	var options=Content.choices(seed_value,encounter)
+	var options=Content.choices(seed_value,encounter,boons)
 	for i in options.size():
 		var id: String=options[i]
 		var boon=Content.BOONS[id]
@@ -299,7 +300,7 @@ func show_camp() -> void:
 	advance.disabled=selected_boon.is_empty()
 	button("Save & title",Rect2(36,928,528,48),func():checkpoint("camp");show_title())
 func next_wave_from_camp() -> void:
-	if screen!="camp" or selected_boon not in Content.choices(seed_value,encounter):return
+	if screen!="camp" or selected_boon not in Content.choices(seed_value,encounter,boons):return
 	boons.append(selected_boon);selected_boon="";encounter+=1
 	var bonus=Content.combine(Gear.bonuses(prefs.gear),boons)
 	var maximum=Rules.MAX_HP+int(bonus.get("vitality",0))
@@ -313,7 +314,12 @@ func finish_run(won: bool,reason: String="health") -> void:
 	if not training:
 		Gear.bank_field(prefs.gear);prefs.runs+=1
 		if won:prefs.wins+=1;prefs.unlocked_depth=mini(5,maxi(prefs.unlocked_depth,depth+1))
-		prefs.materials+=bank;prefs.best=maxi(prefs.best,total_kills+(int(state.kills) if state.status!="won" else 0));prefs.run={};persist()
+		prefs.materials+=bank;prefs.best=maxi(prefs.best,total_kills+(int(state.kills) if state.status!="won" else 0));prefs.run={}
+		if prefs.playtest_mode and report_eligible:
+			var row=run_metrics.duplicate()
+			row.merge({"id":run_id,"won":won,"reason":reason,"stance":stance,"seconds":active_seconds,"camp_seconds":camp_seconds,"planning_seconds":planning_seconds,"animation_seconds":animation_seconds,"wave":encounter,"depth":depth,"seed":seed_value},true)
+			Stats.record_run(prefs.playtest,row)
+		persist()
 	Save.log_event("run_end",{"id":run_id,"won":won,"reason":reason,"seconds":active_seconds,"camp_seconds":camp_seconds,"planning_seconds":planning_seconds,"animation_seconds":animation_seconds,"wave":encounter,"loot":run_loot,"depth":depth})
 	last_finished=Time.get_ticks_msec();clear_screen();screen="results"
 	text("THE HEARTROOT FALLS" if won else "ROOTS HOLD FAST",36,110,528,80,34)
@@ -347,11 +353,12 @@ func pause_game() -> void:
 	modal_button("Save & title",804,func():checkpoint();show_title())
 	modal_button("End expedition",881,func():finish_run(false,"abandon"))
 func show_settings() -> void:
-	modal("SETTINGS","Sound: "+("on" if prefs.sound else "off")+"\nMotion: "+("normal" if prefs.motion else "reduced")+"\nGraphics: "+prefs.quality+"\n\nLow: smaller render target, no shadows or MSAA.\nBalanced: 720-pixel target and soft shadows.\n\nNo screen shake. Offline saves. No accounts, ads or remote analytics.","settings")
-	modal_button("Toggle sound",650,func():prefs.sound=not prefs.sound;audio.enabled=prefs.sound;persist();show_settings())
-	modal_button("Toggle reduced motion",727,func():prefs.motion=not prefs.motion;if_board_motion();persist();show_settings())
-	modal_button("Toggle graphics",804,func():prefs.quality="low" if prefs.quality=="balanced" else "balanced";if_board_quality();persist();show_settings())
-	modal_button("Back",881,close_modal,true)
+	modal("SETTINGS","Sound: "+("on" if prefs.sound else "off")+"\nMotion: "+("normal" if prefs.motion else "reduced")+"\nGraphics: "+prefs.quality+"\n\nLow: 480-pixel render target, no shadows/MSAA.\nBalanced: 720-pixel target and shadows.\n\nOffline only. Local playtest logging can be switched off in Playtest. Save tools preserve progress between installations.","settings")
+	modal_button("Toggle sound",540,func():prefs.sound=not prefs.sound;audio.enabled=prefs.sound;persist();show_settings())
+	modal_button("Toggle reduced motion",612,func():prefs.motion=not prefs.motion;if_board_motion();persist();show_settings())
+	modal_button("Toggle graphics",684,func():prefs.quality="low" if prefs.quality=="balanced" else "balanced";if_board_quality();persist();show_settings())
+	modal_button("Save export / import",756,show_save_tools)
+	modal_button("Back",900,close_modal,true)
 func if_board_motion() -> void:
 	if board:board.reduced_motion=not prefs.motion
 func if_board_quality() -> void:
@@ -385,6 +392,7 @@ func open_pack(at_camp: bool) -> void:
 	if board:board.anim_paused=true
 	pack_ui=PackUI.new();pack_ui.profile=prefs.gear;pack_ui.camp=at_camp
 	pack_ui.changed.connect(func(event,data):
+		if prefs.playtest_mode:Stats.craft(prefs.playtest,event,data)
 		if at_camp:checkpoint("camp")
 		else:persist()
 		Save.log_event(event,data))
@@ -413,5 +421,72 @@ func _notification(what: int) -> void:
 		elif screen=="camp":checkpoint("camp")
 	elif what==NOTIFICATION_WM_GO_BACK_REQUEST:back_action()
 	elif what==NOTIFICATION_WM_CLOSE_REQUEST:
-		if not settled and not training:checkpoint("camp" if screen=="camp" else "game")
+		if not settled and not training and screen in ["game","camp"]:checkpoint("camp" if screen=="camp" else "game")
 		get_tree().quit()
+
+func show_route_explanation() -> void:
+	modal("WHY THIS RESULT?","","explain")
+	modal_scroll(Explain.describe(state,route,Rules.resolve(state,route)),Rect2(36,190,528,610))
+	modal_button("Back to planning",870,close_modal,true)
+func show_playtest() -> void:
+	modal("LOCAL PLAYTEST SUMMARY","","playtest")
+	modal_scroll(("Recording ON" if prefs.playtest_mode else "Recording OFF — no new test records")+"\n\n"+Stats.summary(prefs.playtest),Rect2(36,180,528,535))
+	modal_button("Turn recording "+("off" if prefs.playtest_mode else "on"),750,func():
+		prefs.playtest_mode=not prefs.playtest_mode;Save.events_enabled=prefs.playtest_mode
+		if not prefs.playtest_mode:report_eligible=false
+		persist();show_playtest())
+	modal_button("Copy summary JSON",825,func():
+		if DisplayServer.has_feature(DisplayServer.FEATURE_CLIPBOARD):DisplayServer.clipboard_set(JSON.stringify(prefs.playtest,"  ")))
+	modal_button("Back",900,close_modal,true)
+func export_code() -> String:
+	if not settled and not training and screen in ["game","camp"]:checkpoint("camp" if screen=="camp" else "game")
+	return Save.encode_backup(prefs)
+func show_save_tools(value: String="") -> void:
+	modal("SAVE EXPORT / IMPORT","Export the code to a file or copy it somewhere safe. To restore, replace it with a backup and choose Review restore. This replaces progress; it does not merge inventories.","save_tools")
+	var body=overlay.get_child(2);body.size=Vector2(528,110);body.add_theme_font_size_override("font_size",17)
+	backup_editor=TextEdit.new();backup_editor.position=Vector2(36,310);backup_editor.size=Vector2(528,325);backup_editor.wrap_mode=TextEdit.LINE_WRAPPING_BOUNDARY;backup_editor.add_theme_font_size_override("font_size",14)
+	backup_editor.text=export_code() if value.is_empty() else value;overlay.add_child(backup_editor)
+	button("Copy backup",Rect2(36,665,254,55),func():
+		if DisplayServer.has_feature(DisplayServer.FEATURE_CLIPBOARD):DisplayServer.clipboard_set(backup_editor.text),false,overlay)
+	button("Review restore",Rect2(310,665,254,55),func():stage_import(backup_editor.text),true,overlay)
+	var save_file=button("Save JSON file",Rect2(36,740,254,55),func():backup_file_dialog(true),false,overlay)
+	var load_file=button("Load JSON file",Rect2(310,740,254,55),func():backup_file_dialog(false),false,overlay)
+	var desktop=OS.get_name() not in ["Android","iOS"]
+	save_file.disabled=not desktop;load_file.disabled=not desktop
+	button("Load pre-import backup",Rect2(36,815,528,55),func():
+		var prior=Save.read_backup_file("user://thornwake_before_import.json")
+		if not prior.is_empty():backup_editor.text=prior,false,overlay)
+	modal_button("Back",900,show_settings,true)
+func backup_file_dialog(saving: bool) -> void:
+	if is_instance_valid(file_picker) and not file_picker.is_queued_for_deletion():return
+	var dialog=FileDialog.new();file_picker=dialog;dialog.access=FileDialog.ACCESS_FILESYSTEM;dialog.file_mode=FileDialog.FILE_MODE_SAVE_FILE if saving else FileDialog.FILE_MODE_OPEN_FILE
+	dialog.filters=PackedStringArray(["*.json ; Thornwake backup"]);dialog.current_file="Thornwake-backup.json" if saving else ""
+	overlay.add_child(dialog)
+	dialog.file_selected.connect(func(path):
+		dialog.hide()
+		if not is_instance_valid(backup_editor):return
+		if saving:
+			if not Save.write_text(path,backup_editor.text):save_tool_error("Could not write the backup file.")
+		else:
+			var value=Save.read_backup_file(path)
+			if value.is_empty():save_tool_error("Could not read the file, or it exceeds 2 MiB.")
+			else:backup_editor.text=value
+		dialog.queue_free())
+	dialog.canceled.connect(func():dialog.hide();dialog.queue_free());dialog.popup_centered(Vector2i(540,720))
+func save_tool_error(message: String) -> void:
+	modal("SAVE TOOL MESSAGE",message,"save_error");modal_button("Back",870,show_save_tools)
+func stage_import(value: String) -> void:
+	var decoded=Save.decode_backup(value)
+	if not decoded.ok:save_tool_error(decoded.error);return
+	staged_backup=value
+	var data=decoded.payload
+	modal("REPLACE CURRENT PROGRESS?","This backup contains %d items, %d wins and %s.\n\nYour current save will be copied to a separate pre-import backup first. Restoring replaces your inventory, progression and active expedition. It does not grant or merge rewards.\n\nOnly continue if this is the backup you want." % [data.gear.items.size(),data.wins,"an active expedition" if not data.run.is_empty() else "no active expedition"],"import_confirm")
+	modal_button("RESTORE THIS BACKUP",785,confirm_import,true)
+	modal_button("Cancel",875,func():show_save_tools(staged_backup))
+func confirm_import() -> void:
+	if modal_kind!="import_confirm":return
+	var result=Save.apply_backup(staged_backup,prefs)
+	if not result.ok:save_tool_error(result.error);return
+	prefs=result.payload;audio.enabled=prefs.sound;Save.events_enabled=prefs.playtest_mode
+	state={};training=false;settled=true;run_metrics=Stats.metrics();title_notice="Backup restored. Previous save retained in Save tools."
+	show_title()

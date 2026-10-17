@@ -62,7 +62,7 @@ static func make_item(base: String, rarity: String, rng: RandomNumberGenerator) 
 	if rarity=="unique": stats=UNIQUES[base].stats.duplicate(true)
 	var group=""
 	if rarity=="set": group="Warden" if base in ["shield","coat","charm"] else "Wayfarer"
-	return {"id":uid(),"base":base,"rarity":rarity,"stats":stats,"tier":0,"sockets":[],"corruption":{},"set":group,"location":"stash","x":0,"y":0,"rotation":0}
+	return {"id":uid(),"base":base,"rarity":rarity,"stats":stats,"tier":0,"sockets":[],"corruption":{},"set":group,"location":"stash","x":0,"y":0,"rotation":0,"favorite":false,"locked":false}
 static func fresh() -> Dictionary:
 	var rng=RandomNumberGenerator.new();rng.seed=801
 	var p={"version":2,"items":[],"runes":{},"shards":0,"scrap":18,"rolled":[],"boss_pity":{},"marks":0}
@@ -88,6 +88,7 @@ static func normalize(raw: Dictionary, preserve_field: bool = false) -> Dictiona
 	for item in saved_items:
 		if not item is Dictionary or not BASES.has(item.get("base","")) or item.get("rarity","") not in ["normal","magic","uncommon","rare","epic","unique","set"]: continue
 		var i=item.duplicate(true)
+		i.favorite=i.get("favorite",false)==true;i.locked=i.get("locked",false)==true
 		if i.rarity=="magic":i.rarity="uncommon"
 		if not i.get("id","") is String or i.get("id","").is_empty() or i.id in ids: continue
 		ids.append(i.id)
@@ -210,6 +211,7 @@ static func upgrade_info(profile: Dictionary,id: String) -> Dictionary:
 	var i=find(profile,id)
 	if i.is_empty():return {"ok":false,"message":"Select an item."}
 	if not i.corruption.is_empty():return {"ok":false,"message":"Corrupted: upgrades and socket count are sealed."}
+	if i.tier>=3 and i.get("locked",false):return {"ok":false,"message":"Locked: unlock before a destructive upgrade."}
 	if i.tier>=6:return {"ok":false,"message":"Already at maximum +6."}
 	var cost=(int(i.tier)+1)*6
 	if profile.scrap<cost:return {"ok":false,"message":"Need %d scrap." % cost}
@@ -254,6 +256,7 @@ static func remove_rune(profile: Dictionary, id: String, slot: int) -> String:
 static func corrupt(profile: Dictionary, id: String, rng: RandomNumberGenerator) -> Dictionary:
 	var i=find(profile,id)
 	if i.is_empty(): return {"ok":false,"message":"Select an item."}
+	if i.get("locked",false):return {"ok":false,"message":"Locked: unlock before corruption."}
 	if not i.corruption.is_empty(): return {"ok":false,"message":"Each item can be corrupted only once."}
 	if profile.shards<=0: return {"ok":false,"message":"You need a corruption shard."}
 	profile.shards-=1
@@ -266,6 +269,7 @@ static func corrupt(profile: Dictionary, id: String, rng: RandomNumberGenerator)
 static func salvage(profile: Dictionary, id: String) -> String:
 	var i=find(profile,id)
 	if i.is_empty(): return "Select an item."
+	if i.get("locked",false):return "Locked: unlock before salvage."
 	for rune in i.sockets:
 		if not rune.is_empty(): profile.runes[rune]=int(profile.runes.get(rune,0))+1
 	profile.scrap+=3+int(i.tier)*2
@@ -336,3 +340,53 @@ static func describe_stats(stats: Dictionary) -> String:
 	for key in STATS:
 		if int(stats.get(key,0))>0: words.append("%s +%d" % [stat_name(key),stats[key]])
 	return ", ".join(words) if not words.is_empty() else "No bonuses"
+
+static func flag(profile: Dictionary,id: String,key: String) -> bool:
+	var item=find(profile,id)
+	if item.is_empty() or key not in ["favorite","locked"]:return false
+	item[key]=not item.get(key,false);return true
+static func unsocket_all(profile: Dictionary,id: String) -> Dictionary:
+	var item=find(profile,id)
+	if item.is_empty():return {"count":0,"message":"Select an item."}
+	var count=0
+	for slot in item.sockets.size():
+		if not item.sockets[slot].is_empty():remove_rune(profile,id,slot);count+=1
+	return {"count":count,"message":"Recovered %d Sigils. Binding deactivated until reassembled." % count}
+static func query(profile: Dictionary,camp: bool=false,filter: String="All",order: String="Newest",search: String="",include_bag: bool=false) -> Array:
+	var result=[]
+	for item in profile.items:
+		if item.location=="bag" and not include_bag:continue
+		if camp and item.location not in ["bag","field"]:continue
+		if filter=="Favorites" and not item.get("favorite",false):continue
+		if filter=="Locked" and not item.get("locked",false):continue
+		if filter not in ["All","Favorites","Locked"] and quality(item)!=filter.to_lower():continue
+		var haystack=(name_of(item)+" "+item.base+" "+" ".join(item.sockets)).to_lower()
+		if not search.strip_edges().is_empty() and not search.strip_edges().to_lower() in haystack:continue
+		result.append(item)
+	if order=="Newest":result.reverse()
+	elif order=="Name":result.sort_custom(func(a,b):return name_of(a).naturalnocasecmp_to(name_of(b))<0)
+	elif order=="Tier":result.sort_custom(func(a,b):return a.tier>b.tier if a.tier!=b.tier else name_of(a).naturalnocasecmp_to(name_of(b))<0)
+	elif order=="Quality":
+		var ranks=["normal","uncommon","rare","epic","set","unique","binding"]
+		result.sort_custom(func(a,b):return ranks.find(quality(a))>ranks.find(quality(b)) if quality(a)!=quality(b) else name_of(a).naturalnocasecmp_to(name_of(b))<0)
+	return result
+static func compare(profile: Dictionary,candidate_id: String,reference_id: String) -> Dictionary:
+	var candidate=find(profile,candidate_id);var reference=find(profile,reference_id)
+	if candidate.is_empty() or reference.is_empty() or candidate_id==reference_id:return {"ok":false,"message":"Choose two different items."}
+	var raw={};var effective={}
+	var candidate_stats=item_stats(candidate);var reference_stats=item_stats(reference)
+	for stat in STATS:raw[stat]=int(candidate_stats.get(stat,0))-int(reference_stats.get(stat,0))
+	var message="Item trait differences; conditional traits depend on the route."
+	if reference.location=="bag" and candidate.location!="bag":
+		var copy=profile.duplicate(true);var before=bonuses(copy)
+		find(copy,reference_id).location="stash";find(copy,candidate_id).location="bag"
+		var after=bonuses(copy)
+		for stat in STATS:effective[stat]=int(after.get(stat,0))-int(before.get(stat,0))
+		message="Hypothetical replacement of the packed item. Caps and sets included; shape placement ignored. Arrange manually. Camp boons are separate."
+	return {"ok":true,"raw":raw,"effective":effective,"message":message}
+static func delta_text(values: Dictionary) -> String:
+	var lines=[]
+	for stat in STATS:
+		var value=int(values.get(stat,0))
+		if value!=0:lines.append("%s: %+d" % [stat_name(stat),value])
+	return ", ".join(lines) if not lines.is_empty() else "No trait change."

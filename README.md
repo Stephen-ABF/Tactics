@@ -1,4 +1,4 @@
-# Thornwake Expeditions — v0.5.0
+# Thornwake Expeditions — v0.6.0
 
 A complete offline puzzle-action prototype for **Godot 4.7.2 stable**, standard GDScript edition, Compatibility renderer. Android portrait is the initial target. The board is 3D with procedural character animation and replaceable placeholder art.
 
@@ -24,13 +24,15 @@ Tap adjoining cells to plan a route; tap **Strike** to watch the adventurer dash
 
 Four seeded regular zones—Briarwood, Ashen Hollow, Frostfen and Moonlit Ruins—lead to Heartroot Sanctum. Layouts, terrain, enemy populations and camp choices vary reproducibly by seed. Camps offer one of two expedition boons, a stance switch and access to field loot/backpack crafting. Defeating the Warden wins immediately. Dying ends the run; packed gear and collected finds remain yours.
 
-A win unlocks the next of five Depths. Higher Depths raise enemy health and eventually damage. Early runs use the full baseline mechanic. There are six gear bases, six rarity categories, thirteen Sigils, eleven exact-order Bindings, two sets, +6 upgrades (safe through +3, then 5%/10%/20% destruction), sockets and one-time 90% modifier / 10% destructive corruption. Matching enemies drop exclusive Sigils; the Warden has saved bad-luck protection. Six victory marks buy a chosen Set piece. See [gearing rules](docs/GEARING.md) and the [v0.5.0 update brief](docs/UPDATE_v0.5.0.md).
+A win unlocks the next of five Depths. Higher Depths raise enemy health and eventually damage. Early runs use the full baseline mechanic. There are six gear bases, six rarity categories, thirteen Sigils, eleven exact-order Bindings, two sets, +6 upgrades (safe through +3, then 5%/10%/20% destruction), sockets and one-time 90% modifier / 10% destructive corruption. Matching enemies drop exclusive Sigils; the Warden has saved bad-luck protection. Six victory marks buy a chosen Set piece. See [gearing rules](docs/GEARING.md) and the [v0.6.0 update brief](docs/UPDATE_v0.6.0.md).
 
-## Phase 3 scope and status
+## Current update
+
+New: local Playtest summary, validated save export/import with pre-import recovery, private test signing configuration, inventory sort/filter/favorite/lock/compare tools, quick unsocketing and combat Why explanations. See [PM source of truth](docs/PROJECT_STATUS.md) and [team roles](docs/TEAM_ROLES.md).
 
 Implemented: title/tutorial/game/camp/results/retry loop; persistent gear and active-run saves; backup recovery; pause/restart; sound and reduced-motion settings; low/balanced render modes; safe-area layout; local diagnostic events; automated tests; Windows and Android export presets; CI export workflow; art replacement slots and handoff.
 
-This is a **tested development candidate**, not a published store release. Actual local verification is recorded in [TEST_REPORT.md](TEST_REPORT.md). GitHub Actions has successfully exported debug Windows EXE/PCK and Android APK builds. Artifacts are available from the successful build run. No physical Android device testing or measured mobile performance has occurred. Debug signing is disposable and unsuitable for store release.
+This is a **tested development candidate**, not a published store release. Actual local verification is recorded in [TEST_REPORT.md](TEST_REPORT.md). GitHub Actions has successfully exported debug Windows EXE/PCK and Android APK builds. Artifacts are available from the successful build run. No physical Android device testing or measured mobile performance has occurred. Stable test signing requires repository secrets; until configured, builds use disposable debug keys. Earlier v0.5.0 certificates cannot be recovered. See tools/test-signing/README.md.
 
 ## Tune and extend
 
@@ -58,5 +60,7 @@ For local Android export, install matching Godot export templates, JDK 17 and th
 ## Delivery notes
 
 [Artist handoff](docs/ART_HANDOFF.md), [asset licenses](docs/ASSETS.md), [playtest hypotheses](docs/PLAYTEST.md), [store checklist](docs/RELEASE.md).
+
+Backups: Settings → Save export/import. Desktop has JSON file save/load; mobile uses a copy/paste code. Imports validate and replace progress after confirmation, preserving a pre-import copy. Pack → Tools manages favorites, locks and comparisons. Plan a route → Why? explains its consequences. Title → Playtest opens local records and recording controls.
 
 Biggest unresolved risk: strong gear makes Depth 1 easy, while higher Depths have not had human balance testing. The most valuable next improvement is tuning distinct enemy/gear combinations from observed player decisions and immediate retries. Run length targets 6–9 minutes including camps, but has not been measured with people.

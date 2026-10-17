@@ -33,7 +33,7 @@ func _initialize() -> void:
 					if s.status!="won":failure="health" if s.status=="lost" else "cutoff";break
 					cleared+=1
 					if wave<4:
-						boon_ids.append(C.choices(seed_value,wave)[0])
+						boon_ids.append(C.choices(seed_value,wave,boon_ids)[0])
 						var next_bonus=C.combine(gear,boon_ids)
 						hp=clampi(14+int(next_bonus.get("vitality",0))-(int(s.max_hp)-int(s.hp))+3,1,14+int(next_bonus.get("vitality",0)))
 				var row={"profile":profile,"stance":stance,"seed":seed_value,"waves":cleared,"turns":turns,"failure":failure}

@@ -38,15 +38,27 @@ jobs:
           set -euo pipefail
           mkdir -p builds
           "$GODOT_BIN" --headless --path . --export-debug 'Windows Desktop' builds/Thornwake.exe
-          "$GODOT_BIN" --headless --path . --export-pack 'Windows Desktop' builds/Thornwake-v0.5.0.pck
+          "$GODOT_BIN" --headless --path . --export-pack 'Windows Desktop' builds/Thornwake-v0.6.0.pck
       - name: Configure existing Android SDK and debug signing
         shell: bash
+        env:
+          TEST_KEYSTORE_BASE64: ${{ secrets.THORNWAKE_TEST_KEYSTORE_BASE64 }}
+          TEST_CERT_SHA256: ${{ secrets.THORNWAKE_TEST_CERT_SHA256 }}
         run: |
           set -euo pipefail
           test -d "$ANDROID_HOME/platform-tools"
           test -d "$ANDROID_HOME/build-tools"
           java_path="${JAVA_HOME_17_X64:-$JAVA_HOME}"
-          "$java_path/bin/keytool" -genkeypair -noprompt -keystore "$RUNNER_TEMP/thornwake-debug.keystore" -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname 'CN=Android Debug,O=Thornwake,C=US'
+          if [ -n "$TEST_KEYSTORE_BASE64" ]; then
+            test -n "$TEST_CERT_SHA256"
+            printf '%s' "$TEST_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/thornwake-debug.keystore"
+            echo "TEST_CERT_SHA256=$TEST_CERT_SHA256" >> "$GITHUB_ENV"
+            echo "SIGNING_MODE=retained private test identity" >> "$GITHUB_ENV"
+          else
+            "$java_path/bin/keytool" -genkeypair -noprompt -keystore "$RUNNER_TEMP/thornwake-debug.keystore" -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Thornwake Disposable Test"
+            echo "SIGNING_MODE=disposable test identity; update compatibility not guaranteed" >> "$GITHUB_ENV"
+          fi
+          "$java_path/bin/keytool" -list -keystore "$RUNNER_TEMP/thornwake-debug.keystore" -storepass android
           mkdir -p "$HOME/.config/godot"
           cat > "$HOME/.config/godot/editor_settings-4.7.tres" <<SETTINGS
           [gd_resource type="EditorSettings" format=3]
@@ -59,13 +71,31 @@ jobs:
           SETTINGS
       - name: Export Android debug APK
         run: '"$GODOT_BIN" --headless --path . --export-debug Android builds/Thornwake-debug.apk'
+      - name: Verify APK signature and report signing mode
+        shell: bash
+        run: |
+          set -euo pipefail
+          build_tools="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)"
+          "$build_tools/apksigner" verify --verbose --print-certs builds/Thornwake-debug.apk > builds/Android-signing.txt
+          python3 - <<'PYVERIFY'
+          from pathlib import Path
+          import os
+          expected = os.environ.get('TEST_CERT_SHA256', '').replace(':', '').lower()
+          actual = Path('builds/Android-signing.txt').read_text().replace(':', '').lower()
+          if expected:
+              assert expected in actual, 'APK signing identity changed'
+          with Path('builds/Android-signing.txt').open('a') as report:
+              report.write('\nSigning mode: ' + os.environ['SIGNING_MODE'] + '\n')
+          print(os.environ['SIGNING_MODE'])
+          PYVERIFY
       - uses: actions/upload-artifact@v7.0.2
         if: always()
         with:
-          name: Thornwake-v0.5.0-test-builds
+          name: Thornwake-v0.6.0-test-builds
           path: |
             builds/
             tests/balance_results.json
             tests/economy_results.json
+            tests/balance_matrix.json
           if-no-files-found: warn
           retention-days: 14

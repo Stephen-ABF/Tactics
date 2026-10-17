@@ -26,10 +26,13 @@ const BOONS={
 static func zone(seed_value: int, wave: int) -> String:
 	if wave==4: return "heart"
 	return ["briar","ash","frost","ruins"][posmod(seed_value/2+wave,4)]
-static func choices(seed_value: int,wave: int) -> Array:
+static func choices(seed_value: int,wave: int,owned: Array=[]) -> Array:
 	var rng=RandomNumberGenerator.new()
 	rng.seed=seed_value*31+wave*103
-	var keys=BOONS.keys()
+	var keys=[]
+	for key in BOONS:
+		if key not in owned:keys.append(key)
+	if keys.size()<2:keys=BOONS.keys()
 	var first=rng.randi_range(0,keys.size()-1)
 	var second=(first+rng.randi_range(1,keys.size()-1))%keys.size()
 	return [keys[first],keys[second]]
@@ -39,6 +42,7 @@ static func combine(gear: Dictionary,boons: Array) -> Dictionary:
 		if BOONS.has(id):
 			for stat in BOONS[id].stats: result[stat]=int(result.get(stat,0))+int(BOONS[id].stats[stat])
 	for stat in result: result[stat]=clampi(int(result[stat]),0,20)
+	result.edge=mini(3,int(result.get("edge",0)))
 	result.ward=mini(4,int(result.get("ward",0)))
 	result.stride=mini(2,int(result.get("stride",0)))
 	return result

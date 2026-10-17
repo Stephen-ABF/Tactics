@@ -8,4 +8,4 @@ Before store submission: choose final package ID; create/use the developer accou
 
 No advertisements, purchases, accounts, multiplayer, backend or remote analytics. Store policy and signing requirements must be verified when submitting. Do not label this build published or device-tested until those actions occur.
 
-CI uses a new disposable debug keystore per run. A new CI APK can have a different signing certificate from an earlier test APK, so updating in place may be refused. Do not uninstall without preserving needed test data. For continuous progression testing, export successive builds locally with one retained debug keystore. No installed-device migration has been tested.
+v0.6.0+ CI supports a retained private test certificate through repository secrets; setup is pending. Without secrets it uses a disposable key. Old v0.5.0 APKs used discarded per-run keys and may still require uninstalling after preserving data. Save export/import is now available, with code/clipboard on mobile and JSON files on desktop. A store release needs a separate private signing identity. No installed-device migration has been tested.
