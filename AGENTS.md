@@ -8,4 +8,4 @@
 - Item locks must be enforced in backend operations. Save restoration must validate before replacing state and preserve the pre-import save.
 - Run `python3 tools/run_checks.py --godot /path/to/Godot` before delivery. Record actual results and distinguish simulation, rendered UI checks, hardware testing and human playtesting.
 - Never claim independent audit when the same agent wrote and reviewed the code. Human/device/store gates stay open until actually performed.
-- The public test-signing fixture is exclusively for debug APK continuity. Never use it for release signing or replace it casually.
+- Keep signing keys out of source. Private repository secrets support stable test signing; fallback disposable keys do not guarantee update compatibility. Use a separate private key for store releases.
